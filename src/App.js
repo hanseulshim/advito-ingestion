@@ -1,26 +1,34 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import PropTypes from 'prop-types'
+import { ThemeProvider } from 'styled-components'
+import { Route, Switch, Redirect } from 'react-router-dom'
+import theme from 'styles/variables'
+import GlobalStyle from 'styles/GlobalStyle'
+import Login from 'components/login'
+// import Main from 'components/Main'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { fas } from '@fortawesome/free-solid-svg-icons'
 
-export default App;
+library.add(fas)
+
+// const PrivateRoute = ({ component: Component }) => (
+//   <Route
+//     render={() => (getToken() ? <Component /> : <Redirect to="/login" />)}
+//   />
+// )
+
+const App = () => (
+  <ThemeProvider theme={theme}>
+    <GlobalStyle />
+    <Switch>
+      <Route path="/" component={Login} />
+    </Switch>
+  </ThemeProvider>
+)
+
+// PrivateRoute.propTypes = {
+//   component: PropTypes.func.isRequired
+// }
+
+export default App
