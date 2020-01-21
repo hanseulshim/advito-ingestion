@@ -5,7 +5,7 @@ import { Form, Icon, Input, Button } from 'antd'
 import { Redirect } from 'react-router-dom'
 import { useMutation } from '@apollo/react-hooks'
 import advitoLogo from 'assets/advitoLogo.png'
-// import Footer from './Footer'
+import Footer from './Footer'
 // import ResetPasswordModal from './ResetPasswordModal'
 // import { LOGIN } from 'api'
 // import ErrorMessage from 'components/common/ErrorMessage'
@@ -149,8 +149,8 @@ const Login = ({ form }) => {
           </Form.Item>
         </Form>
       </FormContainer>
-      {/* <ResetPasswordModal visible={visible} setVisible={setVisible} />
-      <Footer /> */}
+      {/* <ResetPasswordModal visible={visible} setVisible={setVisible} /> */}
+      <Footer />
     </Container>
   )
 }
