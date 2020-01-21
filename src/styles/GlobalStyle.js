@@ -5,7 +5,6 @@ export default createGlobalStyle`
   body, #root {
     height: 100vh;
     margin:0;
-    
   }
   #root {
     margin: 0;
