@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 const Login = () => {
-  return <p>Login</p>
+  return <span>Login</span>
 }
 
 export default Login
