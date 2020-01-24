@@ -1,43 +1,33 @@
-import React, { useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Form, Icon, Input, Button } from 'antd'
-import { Redirect } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router'
 import { useMutation } from '@apollo/react-hooks'
+import queryString from 'query-string'
 import advitoLogo from 'assets/advitoLogo.png'
 import Footer from './Footer'
-import ResetPasswordModal from './ResetPasswordModal'
-import { LOGIN } from 'api'
+import { RESET_PASSWORD } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
 import Loader from 'components/common/Loader'
-import { setUser } from 'helper'
 
 const Container = styled.div`
   width: 100%;
   height: 100%;
-  background: ${props => props.theme.jungleMist};
+  position: absolute;
+  left: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: ${props => props.theme.jungleMist};
 `
 
-const Logo = styled.div`
-  display: flex;
+const Logo = styled.img`
+  margin: 3em 0 0 5em;
+  max-width: 200px;
   width: 100%;
-  padding: 2em;
-  > img {
-    max-width: 200px;
-    margin-left: 2em;
-  }
-`
-
-const Title = styled.div`
-  font-size: 4em;
-  text-align: center;
-  color: ${props => props.theme.white};
-  line-height: 1.25;
-  margin-top: 2em;
+  align-self: flex-start;
 `
 
 const FormContainer = styled.div`
@@ -46,6 +36,12 @@ const FormContainer = styled.div`
   max-width: 500px;
 `
 
+const Title = styled.div`
+  font-size: 4em;
+  text-align: center;
+  margin: 2.5em 0 0.5em 0;
+  color: ${props => props.theme.white};
+`
 const ButtonRow = styled.div`
   display: flex;
   justify-content: space-between;
@@ -61,63 +57,39 @@ const Link = styled.div`
   }
 `
 
-const Login = ({ form }) => {
-  const [visible, setVisible] = useState(false)
-  const [login, { loading, error, data }] = useMutation(LOGIN)
+const RestPassword = ({ form }) => {
+  const history = useHistory()
+  const location = useLocation()
+  const [resetPassword, { loading, error, data }] = useMutation(RESET_PASSWORD)
+  const params = queryString.parse(location.search)
+  const { t: token = '' } = params
 
   const handleSubmit = e => {
     e.preventDefault()
-    form.validateFields(async (err, { username, password }) => {
+    form.validateFields(async (err, { password, confirmPassword }) => {
       if (!err) {
         try {
-          await login({
-            variables: { username, password }
+          await resetPassword({
+            variables: { password, confirmPassword, token }
           })
         } catch (e) {
-          console.error('Error in login form: ', e)
+          console.error('Error in reset password form: ', e)
         }
       }
     })
   }
 
-  if (data) {
-    setUser(data.login)
-    return <Redirect to="/" />
-  }
-
   const { getFieldDecorator } = form
   return (
     <Container>
-      <Logo>
-        <img src={advitoLogo} />
-      </Logo>
-      <Title>
-        Welcome to the <br /> Advito Ingestion Console
-      </Title>
+      <Logo src={advitoLogo} />
+      <Title>Reset Password</Title>
       <FormContainer>
         <Form onSubmit={handleSubmit}>
           {loading ? (
             <Loader />
           ) : (
             <>
-              <Form.Item>
-                {getFieldDecorator('username', {
-                  rules: [
-                    { required: true, message: 'Please input your username!' },
-                    {
-                      type: 'email',
-                      message: 'The input is not a valid email!'
-                    }
-                  ]
-                })(
-                  <Input
-                    prefix={
-                      <Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />
-                    }
-                    placeholder="Username"
-                  />
-                )}
-              </Form.Item>
               <Form.Item>
                 {getFieldDecorator('password', {
                   rules: [
@@ -133,30 +105,44 @@ const Login = ({ form }) => {
                   />
                 )}
               </Form.Item>
+              <Form.Item>
+                {getFieldDecorator('confirmPassword', {
+                  rules: [
+                    { required: true, message: 'Please input your password!' }
+                  ]
+                })(
+                  <Input
+                    prefix={
+                      <Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />
+                    }
+                    type="password"
+                    placeholder="Confirm Password"
+                  />
+                )}
+              </Form.Item>
             </>
           )}
           <Form.Item>
             <ButtonRow>
               <Button type="danger" htmlType="submit">
-                Log in
+                Reset Password
               </Button>
-              <Link onClick={() => setVisible(true)}>Forgot Password?</Link>
+              <Link onClick={() => history.push('/login')}>Back to Login</Link>
             </ButtonRow>
             {error && <ErrorMessage error={error} />}
-            {data && <SuccessMessage message={'Success!'} />}
+            {data && <SuccessMessage message={'Password has been reset'} />}
           </Form.Item>
         </Form>
       </FormContainer>
-      <ResetPasswordModal visible={visible} setVisible={setVisible} />
       <Footer />
     </Container>
   )
 }
 
-const LoginForm = Form.create({ name: 'login' })(Login)
+const RestPasswordForm = Form.create({ name: 'restPassword' })(RestPassword)
 
-Login.propTypes = {
+RestPassword.propTypes = {
   form: PropTypes.object.isRequired
 }
 
-export default LoginForm
+export default RestPasswordForm

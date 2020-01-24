@@ -6,37 +6,37 @@ import ApolloClient from 'apollo-boost'
 import { ApolloProvider } from '@apollo/react-hooks'
 import { Router } from 'react-router-dom'
 import history from './history'
-// import { getToken, removeUser, getApi } from './helper'
+import { getToken, removeUser } from './helper'
 
-// const client = new ApolloClient({
-//   uri: getApi(),
-//   request: operation => {
-//     const sessiontoken = getToken()
-//     if (sessiontoken) {
-//       operation.setContext({
-//         headers: {
-//           sessiontoken
-//         }
-//       })
-//     }
-//   },
-//   onError: ({ graphQLErrors }) => {
-//     if (graphQLErrors) {
-//       graphQLErrors.forEach(({ extensions }) => {
-//         if (extensions.code === 401) {
-//           removeUser()
-//         }
-//       })
-//     }
-//   }
-// })
+const client = new ApolloClient({
+  uri: 'https://s0dcs7ru0d.execute-api.us-east-2.amazonaws.com/dev/graphql',
+  request: operation => {
+    const sessiontoken = getToken()
+    if (sessiontoken) {
+      operation.setContext({
+        headers: {
+          sessiontoken
+        }
+      })
+    }
+  },
+  onError: ({ graphQLErrors }) => {
+    if (graphQLErrors) {
+      graphQLErrors.forEach(({ extensions }) => {
+        if (extensions.code === 401) {
+          removeUser()
+        }
+      })
+    }
+  }
+})
 
 ReactDOM.render(
-  //   <ApolloProvider client={client}>
-  <Router history={history}>
-    <App />
-  </Router>,
-  //   </ApolloProvider>,
+  <ApolloProvider client={client}>
+    <Router history={history}>
+      <App />
+    </Router>
+  </ApolloProvider>,
   document.getElementById('root')
 )
 
