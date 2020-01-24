@@ -89,7 +89,7 @@ const Login = ({ form }) => {
   return (
     <Container>
       <Logo>
-        <img src={advitoLogo} />
+        <img src={advitoLogo} alt="logo" />
       </Logo>
       <Title>
         Welcome to the <br /> Advito Ingestion Console
