@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
 import Header from 'components/header'
-// import Application from './Application'
 import Sidebar from 'components/sidebar'
 
 const MainContainer = styled.div`
@@ -23,7 +22,7 @@ const Main = () => (
     <MainContainer>
       <Sidebar />
       <Header />
-      <PortalContainer>{/* <Application /> */}</PortalContainer>
+      <PortalContainer></PortalContainer>
     </MainContainer>
   </>
 )
