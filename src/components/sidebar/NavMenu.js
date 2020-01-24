@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Popover } from 'antd'
-import { Link } from 'react-router-dom'
 import Icon from 'components/common/Icon'
 import './NavMenu.css'
 import { LOGOUT } from 'api'
