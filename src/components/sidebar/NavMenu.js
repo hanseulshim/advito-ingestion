@@ -39,17 +39,6 @@ const PersonIcon = styled(Icon)`
   }
 `
 
-const navItems = [
-  {
-    link: '/user-profile',
-    title: 'User Profile'
-  },
-  {
-    link: '/client-setup',
-    title: 'Client Setup'
-  }
-]
-
 const NavMenu = () => {
   const [logout, { loading, error, data }] = useMutation(LOGOUT)
   const { sessionToken = '' } = getUser()
@@ -59,11 +48,6 @@ const NavMenu = () => {
     <Popover
       content={
         <>
-          {navItems.map(({ link, title }, index) => (
-            <NavItem key={index} to={link}>
-              {title}
-            </NavItem>
-          ))}
           <LogOut onClick={() => logout({ variables: { sessionToken } })}>
             Logout
           </LogOut>
