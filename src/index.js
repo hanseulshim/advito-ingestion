@@ -9,7 +9,7 @@ import history from './history'
 import { getToken, removeUser } from './helper'
 
 const client = new ApolloClient({
-  uri: 'https://s0dcs7ru0d.execute-api.us-east-2.amazonaws.com/dev/graphql',
+  uri: 'https://759byqkv94.execute-api.us-east-2.amazonaws.com/prod/graphql',
   request: operation => {
     const sessiontoken = getToken()
     if (sessiontoken) {
