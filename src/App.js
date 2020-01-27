@@ -14,7 +14,9 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 library.add(fas)
 
 const PrivateRoute = ({ component: Component }) => (
-  <Route render={() => (getToken() ? <Component /> : <Redirect to="/" />)} />
+  <Route
+    render={() => (getToken() ? <Component /> : <Redirect to="/login" />)}
+  />
 )
 
 const App = () => (
