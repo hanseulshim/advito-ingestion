@@ -1,0 +1,7 @@
+.ant-popover-inner-content {
+  display: flex;
+  padding: 1em 2em;
+  flex-direction: column;
+  background-color: #ff9e16;
+  border-radius: 5px;
+}
