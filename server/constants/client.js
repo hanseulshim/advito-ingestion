@@ -1,0 +1,1 @@
+export const ADVITO_CLIENT_ID = 1

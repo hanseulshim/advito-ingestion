@@ -38,3 +38,10 @@ INSERT INTO email_template (advito_application_id, template_name, template_type,
 </html>
 ');
 INSERT INTO advito_application_role (advito_application_id, role_name, role_tag, is_active, description, is_assignable) VALUES (4, 'Ingestion Advito', 'advito', TRUE, 'Ingestion Advito', TRUE), (4, 'Ingestion Client', 'client', TRUE, 'Ingestion Client', TRUE);
+
+CREATE SEQUENCE client_advito_application_link_seq;
+ALTER TABLE client_advito_application_link ALTER id SET DEFAULT NEXTVAL('client_advito_application_link_seq');
+SELECT SETVAL('client_advito_application_link_seq', (SELECT MAX(id) + 1 FROM client_advito_application_link));
+
+INSERT INTO client_advito_application_link (client_id, advito_application_id)
+select c.client_id, 4 from client_advito_application_link as c where advito_application_id = 1;
