@@ -1,0 +1,40 @@
+// ADVITO DB
+INSERT INTO advito_application (application_name, application_full, application_tag, is_active) VALUES ('Ingestion', 'Ingestion', 'ingest', true);
+INSERT INTO email_template (advito_application_id, template_name, template_type, email_subject, email_body) VALUES (4, 'Password Ingestion Recovery', 'Access', 'Ingestion: Password Reset', '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Advito: Ingestion</title>
+    <style>
+        body { font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif; font-size:10pt; color: #344A93; background-color: #ececec }
+    </style>
+</head>
+<body style="background-color:#ececec;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:25px;">
+    <tr>
+        <td width="5%"></td>
+        <td width="75%">
+            <img src="https://www.advito.com/wp-content/uploads/2018/03/adv-logo.png" height="25" alt="Advito">
+            <br><br>
+        </td>
+        <td width="20%"></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td style="padding:20px;background-color:#f8f8f8;border-top:1px solid #ff9e16;border-bottom:1px solid #ff9e16;">
+            Hello, [[NAMEFIRST]].
+            <p>
+                We received a request to reset the password for your <b>Ingestion</b> account. If you made this request, click the temporary link below to choose a new password.
+            </p>
+            <a href="[[URL]]">
+                <button style="padding:5px 10px;background-color:#ff9e16;color:#ffffff;">RESET PASSWORD</button>
+            </a>
+            <p>This link will expire in 24 hours.</p>
+            <p>If you did not make this request, please disregard this email. Your password will not be changed.</p>
+        </td>
+        <td></td>
+    </tr>
+</table>
+</body>
+</html>
+');
+INSERT INTO advito_application_role (advito_application_id, role_name, role_tag, is_active, description, is_assignable) VALUES (4, 'Ingestion Advito', 'advito', TRUE, 'Ingestion Advito', TRUE), (4, 'Ingestion Client', 'client', TRUE, 'Ingestion Client', TRUE);

@@ -6,10 +6,10 @@ import ApolloClient from 'apollo-boost'
 import { ApolloProvider } from '@apollo/react-hooks'
 import { Router } from 'react-router-dom'
 import history from './history'
-import { getToken, removeUser } from './helper'
+import { getToken, removeUser, getApi } from './helper'
 
 const client = new ApolloClient({
-  uri: 'https://759byqkv94.execute-api.us-east-2.amazonaws.com/prod/graphql',
+  uri: getApi(),
   request: operation => {
     const sessiontoken = getToken()
     if (sessiontoken) {

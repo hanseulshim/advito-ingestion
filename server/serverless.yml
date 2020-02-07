@@ -1,0 +1,66 @@
+service: ingestion-server
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-2
+  timeout: 30
+  stage: dev
+  environment:
+    DB_HOST: ${self:custom.environment.DB_HOST}
+    DB_USER: ${self:custom.environment.DB_USER}
+    DB_PASSWORD: ${self:custom.environment.DB_PASSWORD}
+    ADVITO_DB_DATABASE: ${self:custom.environment.ADVITO_DB_DATABASE}
+    AWS_SES_ACCESS_KEY_ID: ${self:custom.environment.AWS_SES_ACCESS_KEY_ID}
+    AWS_SES_SECRET_ACCESS_KEY: ${self:custom.environment.AWS_SES_SECRET_ACCESS_KEY}
+    AWS_SES_REGION: ${self:custom.environment.AWS_SES_REGION}
+  vpc:
+    securityGroupIds:
+      - 'sg-09b7d9888c893594d'
+    subnetIds:
+      - 'subnet-08c1aacead6928c9f'
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'ses:*'
+      Resource: '*'
+
+functions:
+  graphql:
+    warmup: true
+    handler: handler.graphqlHandler
+    events:
+      - http:
+          path: graphql
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - sessiontoken
+              - Content-Type
+            allowCredentials: false
+      - http:
+          path: graphql
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - sessiontoken
+              - Content-Type
+            allowCredentials: false
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  environment: ${file(env.yml):${self:custom.stage}, file(env.yml):default}
+  serverless-offline:
+    port: 4000
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules:
+      forceInclude:
+        - pg
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-plugin-warmup

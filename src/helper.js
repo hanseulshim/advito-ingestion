@@ -43,15 +43,15 @@ export const removeUser = () => {
   history.push('/login')
 }
 
-// export const getApi = () => {
-//   const REACT_APP_STAGE = process.env.REACT_APP_STAGE
-//   return REACT_APP_STAGE === 'dev'
-//     ? 'https://lfl1qiymy7.execute-api.us-east-2.amazonaws.com/dev/graphql'
-//     : REACT_APP_STAGE === 'alpha'
-//     ? 'https://trfrs1gzn8.execute-api.us-east-2.amazonaws.com/alpha/graphql'
-//     : REACT_APP_STAGE === 'beta'
-//     ? 'https://7smhjazdr2.execute-api.us-east-2.amazonaws.com/beta/graphql'
-//     : REACT_APP_STAGE === 'prod'
-//     ? 'https://759byqkv94.execute-api.us-east-2.amazonaws.com/prod/graphql'
-//     : 'http://localhost:4000/graphql'
-// }
+export const getApi = () => {
+  const REACT_APP_STAGE = process.env.REACT_APP_STAGE
+  return REACT_APP_STAGE === 'dev'
+    ? 'https://sp0owoqyr0.execute-api.us-east-2.amazonaws.com/dev/graphql'
+    : REACT_APP_STAGE === 'alpha'
+    ? 'https://8t09b8y0q4.execute-api.us-east-2.amazonaws.com/alpha/graphql'
+    : REACT_APP_STAGE === 'beta'
+    ? 'https://q0x8h2ty95.execute-api.us-east-2.amazonaws.com/beta/graphql'
+    : REACT_APP_STAGE === 'prod'
+    ? 'https://2h33cdp67l.execute-api.us-east-2.amazonaws.com/prod/graphql'
+    : 'http://localhost:4000/graphql'
+}
