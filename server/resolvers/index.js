@@ -1,14 +1,16 @@
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 import merge from 'lodash/merge'
-import { user } from './user'
-import { client } from './client'
+import user from './user'
+import client from './client'
+import application from './application'
 import moment from 'moment'
 
 export const resolvers = {
   ...merge(
     user,
-    client
+    client,
+    application
   ),
   Date: new GraphQLScalarType({
     name: 'Date',

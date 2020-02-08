@@ -6,6 +6,7 @@ export class Client extends Model {
   }
 
   static get relationMappings() {
+    const { AdvitoApplication } = require('./application')
     return {
       applications: {
         relation: Model.ManyToManyRelation,
@@ -20,11 +21,5 @@ export class Client extends Model {
         }
       }
     }
-  }
-}
-
-export class AdvitoApplication extends Model {
-  static get tableName() {
-    return 'advitoApplication'
   }
 }

@@ -1,7 +1,7 @@
 import { ADVITO_CLIENT_ID, ADVITO_INGESTION_APPLICATION } from '../constants'
 import { Client } from '../models'
 
-export const client = {
+export default {
   Query: {
     clientList: async (_, __, { user }) => {
       if (parseInt(user.clientId) === ADVITO_CLIENT_ID) {

@@ -1,5 +1,4 @@
-export const user = `
-
+export default `
 type Login {
   id: Int
   displayName: String

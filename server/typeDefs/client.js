@@ -1,4 +1,4 @@
-export const client = `
+export default `
 type Client {
   id: Int
   clientName: String

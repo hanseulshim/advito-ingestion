@@ -21,7 +21,7 @@ import {
   RECOVERY
 } from '../constants'
 
-export const user = {
+export default {
   Mutation: {
     login: async (_, { username, password }) => {
       const user = await AdvitoUser.query()
