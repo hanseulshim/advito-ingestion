@@ -11,3 +11,9 @@ export class AdvitoApplicationRole extends Model {
     return 'advitoApplicationRole'
   }
 }
+
+export class AdvitoApplicationTemplate extends Model {
+  static get tableName() {
+    return 'advitoApplicationTemplate'
+  }
+}

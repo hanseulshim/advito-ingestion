@@ -9,6 +9,11 @@ export default {
         id
         applicationName
       }
+
+      templateList(applicationId: null) {
+        id
+        templateName
+      }
     }`
   }
 }
