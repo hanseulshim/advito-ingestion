@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 /dist
+/build
 /server/node_modules
 /server/.serverless
 /server/_warmup
