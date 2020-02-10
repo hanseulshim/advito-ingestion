@@ -23,7 +23,9 @@ const ListTitle = styled(Title)`
 `
 
 const MyApplications = () => {
-  const { loading, error, data } = useQuery(APPLICATION_LIST)
+  const { loading, error, data } = useQuery(APPLICATION_LIST, {
+    fetchPolicy: 'network-only'
+  })
   if (loading) return <Loader />
   if (error) return <ErrorMessage error={error} />
   return (
