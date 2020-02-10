@@ -27,4 +27,12 @@ export const TEMPLATE_LIST = gql`
   }
 `
 
+export const SOURCE_LIST = gql`
+  query sourceList($templateId: Int) {
+    sourceList(templateId: $templateId) {
+      id
+      sourceName
+    }
+  }
+`
 export const ANALYTICS_ID = 3

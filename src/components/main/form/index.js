@@ -2,7 +2,12 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Title } from 'components/common/Typography'
 import { Select } from 'antd'
-import { CLIENT_LIST, APPLICATION_LIST, TEMPLATE_LIST } from 'api/queries'
+import {
+  CLIENT_LIST,
+  APPLICATION_LIST,
+  TEMPLATE_LIST,
+  SOURCE_LIST
+} from 'api/queries'
 import { useQuery } from '@apollo/react-hooks'
 import Loader from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
@@ -116,13 +121,22 @@ const SelectTemplate = ({ variables = null, label, onChange }) => {
 }
 
 const SelectSource = ({ variables = null, label, onChange }) => {
+  const { loading, error, data } = useQuery(SOURCE_LIST, {
+    variables
+  })
+  if (loading) return <Loader />
+  if (error) return <ErrorMessage error={error} />
   return (
     <FormSelect>
       <span>{label}</span>
       <Select onChange={onChange}>
-        <Option key="source1">Source 1</Option>
-        <Option key="source2">Source 2</Option>
-        <Option key="source3">Source 3</Option>
+        {data.sourceList.map((source, i) => {
+          return (
+            <Option key={source + i} value={source.id}>
+              {source.sourceName}
+            </Option>
+          )
+        })}
       </Select>
     </FormSelect>
   )
@@ -158,6 +172,7 @@ const Form = () => {
         />
         <SelectSource
           label="Source"
+          variables={{ templateId: inputs.template || null }}
           onChange={e => handleInputChange('source', e)}
         />
       </Row>
