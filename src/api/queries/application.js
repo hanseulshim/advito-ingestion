@@ -35,4 +35,16 @@ export const SOURCE_LIST = gql`
     }
   }
 `
+
+export const SAMPLE_TEMPLATE_LIST = gql`
+  {
+    sampleTemplateList {
+      id
+      templateName
+      applicationName
+      templatePath
+    }
+  }
+`
+
 export const ANALYTICS_ID = 3
