@@ -1,4 +1,8 @@
-import { AdvitoApplication, AdvitoApplicationTemplate } from '../models'
+import {
+  AdvitoApplication,
+  AdvitoApplicationTemplate,
+  AdvitoApplicationTemplateSource
+} from '../models'
 
 export default {
   Query: {
