@@ -68,7 +68,7 @@ const SelectClient = ({ variables = null, label, onChange }) => {
       <Select onChange={onChange}>
         {data.clientList.map((client, i) => {
           return (
-            <Option key={client + i} value={client.id}>
+            <Option key={'client' + i} value={client.id}>
               {client.clientName}
             </Option>
           )
@@ -88,7 +88,7 @@ const SelectPractice = ({ variables = null, label, onChange }) => {
       <Select onChange={onChange}>
         {data.applicationList.map((application, i) => {
           return (
-            <Option key={application + i} value={application.id}>
+            <Option key={'application' + i} value={application.id}>
               {application.applicationName}
             </Option>
           )
@@ -100,7 +100,8 @@ const SelectPractice = ({ variables = null, label, onChange }) => {
 
 const SelectTemplate = ({ variables = null, label, onChange }) => {
   const { loading, error, data } = useQuery(TEMPLATE_LIST, {
-    variables
+    variables,
+    fetchPolicy: 'network-only'
   })
   if (loading) return <Loader />
   if (error) return <ErrorMessage error={error} />
@@ -110,7 +111,7 @@ const SelectTemplate = ({ variables = null, label, onChange }) => {
       <Select onChange={onChange}>
         {data.templateList.map((template, i) => {
           return (
-            <Option key={template + i} value={template.id}>
+            <Option key={'template' + i} value={template.id}>
               {template.templateName}
             </Option>
           )
@@ -122,7 +123,8 @@ const SelectTemplate = ({ variables = null, label, onChange }) => {
 
 const SelectSource = ({ variables = null, label, onChange }) => {
   const { loading, error, data } = useQuery(SOURCE_LIST, {
-    variables
+    variables,
+    fetchPolicy: 'network-only'
   })
   if (loading) return <Loader />
   if (error) return <ErrorMessage error={error} />
@@ -132,7 +134,7 @@ const SelectSource = ({ variables = null, label, onChange }) => {
       <Select onChange={onChange}>
         {data.sourceList.map((source, i) => {
           return (
-            <Option key={source + i} value={source.id}>
+            <Option key={'source' + i} value={source.id}>
               {source.sourceName}
             </Option>
           )
@@ -146,13 +148,33 @@ const SelectSource = ({ variables = null, label, onChange }) => {
 }
 
 const Form = () => {
-  const [inputs, setInputs] = useState({})
+  const initialState = {
+    client: null,
+    application: null,
+    template: null,
+    source: null
+  }
+  const [inputs, setInputs] = useState(initialState)
 
   const handleInputChange = (key, value) => {
-    setInputs(inputs => ({
-      ...inputs,
-      [key]: value
-    }))
+    if (key === 'application') {
+      setInputs(inputs => ({
+        ...inputs,
+        [key]: value,
+        template: null,
+        source: null
+      }))
+    } else if (key === 'template') {
+      setInputs(inputs => ({
+        ...inputs,
+        [key]: value,
+        source: null
+      }))
+    } else
+      setInputs(inputs => ({
+        ...inputs,
+        [key]: value
+      }))
   }
   return (
     <Container>
@@ -180,7 +202,9 @@ const Form = () => {
         />
       </Row>
       <File type="file" onChange={e => handleInputChange('file', e)} />
-      <Upload onClick={e => console.log}>Upload</Upload>
+      <div style={{ maxWidth: '900px' }}>
+        <Upload onClick={e => console.log('Uploaded!')}>Upload</Upload>
+      </div>
     </Container>
   )
 }
