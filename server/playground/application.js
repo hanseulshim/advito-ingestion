@@ -13,6 +13,8 @@ export default {
       templateList(applicationId: null) {
         id
         templateName
+        applicationName
+        templatePath
       }
 
       sourceList(templateId: null) {
