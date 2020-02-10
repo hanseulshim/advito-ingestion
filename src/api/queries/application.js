@@ -1,11 +1,30 @@
 import gql from 'graphql-tag'
 
-export const APPLICATION_LIST = gql`
+export const CLIENT_LIST = gql`
   {
-    applicationList {
-      applicationName
-      enabled
+    clientList {
+      id
+      clientName
     }
   }
 `
+
+export const APPLICATION_LIST = gql`
+  {
+    applicationList {
+      id
+      applicationName
+    }
+  }
+`
+
+export const TEMPLATE_LIST = gql`
+  query templateList($applicationId: Int) {
+    templateList(applicationId: $applicationId) {
+      id
+      templateName
+    }
+  }
+`
+
 export const ANALYTICS_ID = 3

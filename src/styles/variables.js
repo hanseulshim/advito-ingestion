@@ -14,5 +14,6 @@ export default {
   steelBlue: '#5890bf',
   tropicalBlue: '#cae4f9',
   deepBlush: '#EB707F',
-  verticalSpace: '3.5em'
+  verticalSpace: '3.5em',
+  horizontalSpace: '3.5em'
 }

@@ -19,10 +19,9 @@ const LogOut = styled.span`
 `
 
 const PersonIcon = styled(Icon)`
-  font-size: 1em;
+  font-size: 1.5em;
   color: ${props => props.theme.treePoppy};
   cursor: pointer;
-
   :hover {
     color: ${props => props.theme.tradewind};
   }
@@ -44,7 +43,7 @@ const NavMenu = () => {
       }
       trigger="click"
     >
-      <PersonIcon icon="cog">Click me</PersonIcon>
+      <PersonIcon icon="cog" />
     </Popover>
   )
 }
