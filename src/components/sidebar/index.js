@@ -6,7 +6,6 @@ import { useQuery } from '@apollo/react-hooks'
 import Title from 'components/common/Typography'
 import Loader from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
-import { getUser } from 'helper'
 
 const Container = styled.div`
   background: ${props => props.theme.concrete};
@@ -62,7 +61,7 @@ const SampleTemplates = () => {
       <ListTitle level={4}>SAMPLE TEMPLATES</ListTitle>
       {data.sampleTemplateList.map((template, i) => {
         return (
-          <Link href={template.templatePath} download>
+          <Link key={'template' + i} href={template.templatePath} download>
             {template.applicationName} - {template.templateName}
           </Link>
         )
