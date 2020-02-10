@@ -18,13 +18,17 @@ const Container = styled.div`
 
 const ListContainer = styled.div``
 
+const ListTitle = styled(Title)`
+  text-transform: uppercase;
+`
+
 const MyApplications = () => {
   const { loading, error, data } = useQuery(APPLICATION_LIST)
   if (loading) return <Loader />
   if (error) return <ErrorMessage error={error} />
   return (
     <ListContainer>
-      <Title level={4}>My Applications</Title>
+      <ListTitle level={4}>MY APPLICATIONS</ListTitle>
       {data.applicationList.map((application, i) => {
         return <p>{application.applicationName}</p>
       })}
@@ -38,7 +42,7 @@ const SampleTemplates = () => {
   // if (error) return <ErrorMessage error={error} />
   return (
     <ListContainer>
-      <Title level={4}>Sample Templates</Title>
+      <ListTitle level={4}>SAMPLE TEMPLATES</ListTitle>
       {/* {data.applicationList.map((application, i) => {
         return <p>{application.applicationName}</p>
       })} */}
