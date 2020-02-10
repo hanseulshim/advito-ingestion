@@ -203,7 +203,7 @@ const Form = () => {
       </Row>
       <File type="file" onChange={e => handleInputChange('file', e)} />
       <div style={{ maxWidth: '900px' }}>
-        <Upload onClick={e => console.log}>Upload</Upload>
+        <Upload onClick={e => console.log('Uploaded!')}>Upload</Upload>
       </div>
     </Container>
   )
