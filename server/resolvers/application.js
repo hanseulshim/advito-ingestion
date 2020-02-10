@@ -21,7 +21,7 @@ export default {
         .andWhere('a.isActive', true),
     templateList: async (_, { applicationId }) =>
       await AdvitoApplicationTemplate.query()
-        .select('*')
+        .select('t.*', 'a.application_name')
         .alias('t')
         .leftJoin('advitoApplication as a', 'a.id', 't.advitoApplicationId')
         .where('advitoApplicationId', applicationId),
