@@ -1,8 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Title } from 'components/common/Typography'
-import { Link } from 'react-router-dom'
-// import User from 'assets/user.png'
+import Icon from 'components/common/Icon'
 import { getUser } from 'helper'
 import NavMenu from './NavMenu'
 
@@ -12,19 +11,18 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   min-height: 100px;
-  margin-bottom: 3em;
+  margin-bottom: ${props => props.theme.verticalSpace};
 `
 
 const Avatar = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  img {
-    border-radius: 50%;
-    border: 1px solid ${props => props.theme.doveGray};
-    width: 5em;
-    vertical-align: bottom;
-  }
+  border-radius: 50%;
+  background: ${props => props.theme.doveGray};
+  padding: 15px;
+  font-size: 1.5em;
+  color: ${props => props.theme.white};
 `
 
 const TitleContainer = styled.div`
@@ -40,9 +38,7 @@ const SideBarUserInfo = () => {
     <Container>
       <TitleContainer>
         <Avatar>
-          <Link to="/user-profile" replace>
-            {/* <img src={User} alt="avatar" /> */}
-          </Link>
+          <Icon icon={'user'} alt="avatar" size="lg" />
         </Avatar>
         <NavMenu />
       </TitleContainer>

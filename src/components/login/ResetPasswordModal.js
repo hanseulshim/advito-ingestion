@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useMutation } from '@apollo/react-hooks'
 import { Modal, Form, Input, Button } from 'antd'
-import { SEND_RESET_PASSWORD, ANALYTICS_ID } from 'api'
+import { SEND_RESET_PASSWORD } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
 import Loader from 'components/common/Loader'
@@ -18,7 +18,7 @@ const ResetPasswordModal = ({ form, visible, setVisible }) => {
       if (!err) {
         try {
           await sendResetPasswordEmail({
-            variables: { appId: ANALYTICS_ID, email }
+            variables: { email }
           })
         } catch (e) {
           console.error('Error in reset password form: ', e)

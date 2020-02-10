@@ -1,4 +1,8 @@
-import { AdvitoApplication, AdvitoApplicationTemplate } from '../models'
+import {
+  AdvitoApplication,
+  AdvitoApplicationTemplate,
+  AdvitoApplicationTemplateSource
+} from '../models'
 
 export default {
   Query: {
@@ -19,6 +23,11 @@ export default {
       AdvitoApplicationTemplate.query().where(
         'advitoApplicationId',
         applicationId
+      ),
+    sourceList: async (_, { templateId }) =>
+      AdvitoApplicationTemplateSource.query().where(
+        'advitoApplicationTemplateId',
+        templateId
       )
   }
 }
