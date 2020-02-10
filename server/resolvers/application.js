@@ -25,6 +25,20 @@ export default {
         .alias('t')
         .leftJoin('advitoApplication as a', 'a.id', 't.advitoApplicationId')
         .where('advitoApplicationId', applicationId),
+    sampleTemplateList: async (_, __, { user }) =>
+      AdvitoApplicationTemplate.query()
+        .select('t.*', 'a.application_name')
+        .alias('t')
+        .leftJoin('advitoApplication as a', 'a.id', 't.advitoApplicationId')
+        .leftJoin(
+          'advitoApplicationRole as ar',
+          'ar.advitoApplicationId',
+          'a.id'
+        )
+        .leftJoin('advitoUserRoleLink as ur', 'ur.advitoRoleId', 'ar.id')
+        .leftJoin('advitoUser as u', 'u.id', 'ur.advitoUserId')
+        .where('u.id', user.id)
+        .andWhere('a.isActive', true),
     sourceList: async (_, { templateId }) =>
       AdvitoApplicationTemplateSource.query().where(
         'advitoApplicationTemplateId',

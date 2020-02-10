@@ -17,6 +17,13 @@ export default {
         templatePath
       }
 
+      sampleTemplateList{
+        id
+        templateName
+        applicationName
+        templatePath
+      }
+
       sourceList(templateId: null) {
         id
         sourceName
