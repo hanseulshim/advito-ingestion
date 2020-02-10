@@ -10,7 +10,6 @@ import { removeUser, getUser } from 'helper'
 
 const LogOut = styled.span`
   color: ${props => props.theme.white};
-  margin-bottom: 1em;
   cursor: pointer;
   :hover {
     color: ${props => props.theme.white};
@@ -42,6 +41,7 @@ const NavMenu = () => {
         </>
       }
       trigger="click"
+      placement="bottom"
     >
       <PersonIcon icon="cog" />
     </Popover>

@@ -19,6 +19,11 @@ export default {
       AdvitoApplicationTemplate.query().where(
         'advitoApplicationId',
         applicationId
+      ),
+    sourceList: async (_, { templateId }) =>
+      AdvitoApplicationTemplateSource.query().where(
+        'advitoApplicationTemplateId',
+        templateId
       )
   }
 }

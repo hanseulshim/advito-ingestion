@@ -14,6 +14,11 @@ export default {
         id
         templateName
       }
+
+      sourceList(templateId: null) {
+        id
+        sourceName
+      }
     }`
   }
 }
