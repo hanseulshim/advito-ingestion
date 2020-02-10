@@ -20,10 +20,11 @@ export default {
         .where('u.id', user.id)
         .andWhere('a.isActive', true),
     templateList: async (_, { applicationId }) =>
-      AdvitoApplicationTemplate.query().where(
-        'advitoApplicationId',
-        applicationId
-      ),
+      await AdvitoApplicationTemplate.query()
+        .select('*')
+        .alias('t')
+        .leftJoin('advitoApplication as a', 'a.id', 't.advitoApplicationId')
+        .where('advitoApplicationId', applicationId),
     sourceList: async (_, { templateId }) =>
       AdvitoApplicationTemplateSource.query().where(
         'advitoApplicationTemplateId',

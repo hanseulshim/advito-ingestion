@@ -7,6 +7,8 @@ type Application {
 type Template {
   id: Int
   templateName: String
+  applicationName: String
+  templatePath: String
 }
 
 type Source {
