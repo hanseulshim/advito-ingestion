@@ -11,7 +11,6 @@ const Container = styled.div`
   background: ${props => props.theme.concrete};
   padding: ${props => props.theme.verticalSpace}
     ${props => props.theme.horizontalSpace};
-  height: 100%;
   opacity: 0.95;
   flex: 1;
 `
@@ -26,12 +25,10 @@ const ListTitle = styled(Title)`
 
 const App = styled.span`
   display: block;
-  max-width: 50%;
   margin-bottom: 5px;
 `
 const Link = styled.a`
   display: block;
-  max-width: 75%;
   color: ${props => props.theme.steelBlue};
   margin-bottom: 5px;
 `
