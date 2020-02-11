@@ -6,9 +6,8 @@ export default {
     clientList: async (_, __, { user }) => {
       if (parseInt(user.clientId) === ADVITO_CLIENT_ID) {
         return Client.query()
-        .alias('c')
-        .joinRelated('applications', {alias: 'a'})
-        .andWhere('c.isActive', true);
+        .where('isActive', true)
+        .orderBy('clientName')
       } else {
         return Client.query().where('id', user.clientId)
       }
