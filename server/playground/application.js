@@ -10,7 +10,19 @@ export default {
         applicationName
       }
 
+      practiceAreaList(clientId: null) {
+        id
+        applicationName
+      }
+
       templateList(applicationId: null) {
+        id
+        templateName
+        applicationName
+        templatePath
+      }
+
+      sampleTemplateList{
         id
         templateName
         applicationName

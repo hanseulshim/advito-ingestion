@@ -18,7 +18,9 @@ type Source {
 
 extend type Query {
   applicationList: [Application] @auth
+  practiceAreaList(clientId: Int): [Application] @auth
   templateList(applicationId: Int): [Template] @auth
+  sampleTemplateList: [Template] @auth
   sourceList(templateId: Int): [Source] @auth
 }
 `
