@@ -21,14 +21,18 @@ const StyledTitle = styled(Title)`
 const Row = styled.div`
   display: flex;
   margin-bottom: ${props => props.theme.verticalSpace};
+
+  > div {
+    max-width: 400px;
+    margin-right: ${props => props.theme.horizontalSpace};
+  }
 `
 
 const FormSelect = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 400px;
-  margin-right: ${props => props.theme.horizontalSpace};
+
   > span {
     text-transform: uppercase;
     margin-bottom: 2px;
@@ -127,9 +131,6 @@ const SelectTemplate = ({ variables = null, label, onChange }) => {
         })}
       </Select>
     </FormSelect>
-    // <FormSelect>
-    //   <SpinLoader />
-    // </FormSelect>
   )
 }
 
