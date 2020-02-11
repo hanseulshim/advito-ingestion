@@ -4,7 +4,7 @@ import { Title } from 'components/common/Typography'
 import { Select } from 'antd'
 import {
   CLIENT_LIST,
-  APPLICATION_LIST,
+  PRACTICE_AREA_LIST,
   TEMPLATE_LIST,
   SOURCE_LIST
 } from 'api/queries'
@@ -79,14 +79,17 @@ const SelectClient = ({ variables = null, label, onChange }) => {
 }
 
 const SelectPractice = ({ variables = null, label, onChange }) => {
-  const { loading, error, data } = useQuery(APPLICATION_LIST)
+  const { loading, error, data } = useQuery(PRACTICE_AREA_LIST, {
+    variables,
+    fetchPolicy: 'network-only'
+  })
   if (loading) return <Loader />
   if (error) return <ErrorMessage error={error} />
   return (
     <FormSelect>
       <span>{label}</span>
       <Select onChange={onChange}>
-        {data.applicationList.map((application, i) => {
+        {data.practiceAreaList.map((application, i) => {
           return (
             <Option key={'application' + i} value={application.id}>
               {application.applicationName}
@@ -157,6 +160,15 @@ const Form = () => {
   const [inputs, setInputs] = useState(initialState)
 
   const handleInputChange = (key, value) => {
+    if (key === 'client') {
+      setInputs(inputs => ({
+        ...inputs,
+        [key]: value,
+        application: null,
+        template: null,
+        source: null
+      }))
+    }
     if (key === 'application') {
       setInputs(inputs => ({
         ...inputs,
@@ -186,6 +198,7 @@ const Form = () => {
         />
         <SelectPractice
           label="Practice Area"
+          variables={{ clientId: inputs.client || null }}
           onChange={e => handleInputChange('application', e)}
         />
       </Row>

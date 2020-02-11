@@ -9,9 +9,9 @@ export const CLIENT_LIST = gql`
   }
 `
 
-export const APPLICATION_LIST = gql`
-  {
-    applicationList {
+export const PRACTICE_AREA_LIST = gql`
+  query practiceAreaList($clientId: Int) {
+    practiceAreaList(clientId: $clientId) {
       id
       applicationName
     }
@@ -36,6 +36,14 @@ export const SOURCE_LIST = gql`
   }
 `
 
+export const APPLICATION_LIST = gql`
+  {
+    applicationList {
+      id
+      applicationName
+    }
+  }
+`
 export const SAMPLE_TEMPLATE_LIST = gql`
   {
     sampleTemplateList {
