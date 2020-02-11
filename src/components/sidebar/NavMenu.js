@@ -5,7 +5,7 @@ import Icon from 'components/common/Icon'
 import './NavMenu.css'
 import { LOGOUT } from 'api'
 import { useMutation } from '@apollo/react-hooks'
-import Loader from 'components/common/Loader'
+import { SpinLoader } from 'components/common/Loader'
 import { removeUser, getUser } from 'helper'
 
 const LogOut = styled.span`
@@ -29,7 +29,7 @@ const PersonIcon = styled(Icon)`
 const NavMenu = () => {
   const [logout, { loading, error, data }] = useMutation(LOGOUT)
   const { sessionToken = '' } = getUser()
-  if (loading) return <Loader />
+  if (loading) return <SpinLoader />
   if (data || error) removeUser()
   return (
     <Popover

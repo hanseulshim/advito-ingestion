@@ -10,7 +10,7 @@ import Footer from './Footer'
 import { RESET_PASSWORD } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
-import Loader from 'components/common/Loader'
+import { SkeletonLoader } from 'components/common/Loader'
 
 const Container = styled.div`
   width: 100%;
@@ -87,7 +87,7 @@ const RestPassword = ({ form }) => {
       <FormContainer>
         <Form onSubmit={handleSubmit}>
           {loading ? (
-            <Loader />
+            <SkeletonLoader />
           ) : (
             <>
               <Form.Item>

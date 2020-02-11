@@ -10,12 +10,12 @@ import ResetPasswordModal from './ResetPasswordModal'
 import { LOGIN } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
-import Loader from 'components/common/Loader'
+import { SkeletonLoader } from 'components/common/Loader'
 import { setUser } from 'helper'
 
 const Container = styled.div`
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background: ${props => props.theme.jungleMist};
   display: flex;
   flex-direction: column;
@@ -97,7 +97,7 @@ const Login = ({ form }) => {
       <FormContainer>
         <Form onSubmit={handleSubmit}>
           {loading ? (
-            <Loader />
+            <SkeletonLoader />
           ) : (
             <>
               <Form.Item>

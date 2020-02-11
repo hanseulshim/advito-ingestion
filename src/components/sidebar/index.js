@@ -4,7 +4,7 @@ import { APPLICATION_LIST, SAMPLE_TEMPLATE_LIST } from 'api/queries'
 import SidebarUserInfo from './SidebarUserInfo'
 import { useQuery } from '@apollo/react-hooks'
 import Title from 'components/common/Typography'
-import Loader from 'components/common/Loader'
+import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
 
 const Container = styled.div`
@@ -37,7 +37,7 @@ const MyApplications = () => {
   const { loading, error, data } = useQuery(APPLICATION_LIST, {
     fetchPolicy: 'network-only'
   })
-  if (loading) return <Loader />
+  if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (
     <ListContainer>
@@ -51,7 +51,7 @@ const MyApplications = () => {
 
 const SampleTemplates = () => {
   const { loading, error, data } = useQuery(SAMPLE_TEMPLATE_LIST)
-  if (loading) return <Loader />
+  if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (
     <ListContainer>

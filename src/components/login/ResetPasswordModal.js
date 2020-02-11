@@ -5,7 +5,7 @@ import { Modal, Form, Input, Button } from 'antd'
 import { SEND_RESET_PASSWORD } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
-import Loader from 'components/common/Loader'
+import { SkeletonLoader } from 'components/common/Loader'
 
 const ResetPasswordModal = ({ form, visible, setVisible }) => {
   const [sendResetPasswordEmail, { loading, error, data }] = useMutation(
@@ -39,7 +39,7 @@ const ResetPasswordModal = ({ form, visible, setVisible }) => {
         <Form onSubmit={handleSubmit}>
           <div>Enter your email address below to reset your password</div>
           {loading ? (
-            <Loader />
+            <SkeletonLoader />
           ) : (
             <Form.Item>
               {getFieldDecorator('email', {
