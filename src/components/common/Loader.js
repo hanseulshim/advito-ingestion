@@ -1,5 +1,17 @@
 import React from 'react'
-import { Skeleton } from 'antd'
+import styled from 'styled-components'
+import { Skeleton, Spin } from 'antd'
 
-const Loader = () => <Skeleton active />
-export default Loader
+export const SkeletonLoader = () => <Skeleton active />
+
+const SpinContainer = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
+export const SpinLoader = () => (
+  <SpinContainer>
+    <Spin />
+  </SpinContainer>
+)

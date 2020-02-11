@@ -9,11 +9,12 @@ export default createGlobalStyle`
     margin: 0;
     padding: 0;
     font-family: 'Rubik', sans-serif;
-    background: ${props => props.theme.alabaster};
+    background: ${props => props.theme.white};
     color: ${props => props.theme.doveGray};
     font-weight: 300;
     font-size: 16px;
     line-height: 20px;
+    
     @media (max-width : 1336px){
       font-size: 14px;
       line-height: 17px;

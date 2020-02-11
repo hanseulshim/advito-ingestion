@@ -9,7 +9,7 @@ import {
   SOURCE_LIST
 } from 'api/queries'
 import { useQuery } from '@apollo/react-hooks'
-import Loader from 'components/common/Loader'
+import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
 
 const Container = styled.div``
@@ -21,14 +21,18 @@ const StyledTitle = styled(Title)`
 const Row = styled.div`
   display: flex;
   margin-bottom: ${props => props.theme.verticalSpace};
+
+  > div {
+    max-width: 400px;
+    margin-right: ${props => props.theme.horizontalSpace};
+  }
 `
 
 const FormSelect = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 400px;
-  margin-right: ${props => props.theme.horizontalSpace};
+
   > span {
     text-transform: uppercase;
     margin-bottom: 2px;
@@ -60,7 +64,7 @@ const { Option } = Select
 
 const SelectClient = ({ variables = null, label, onChange }) => {
   const { loading, error, data } = useQuery(CLIENT_LIST)
-  if (loading) return <Loader />
+  if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (
     <FormSelect>
@@ -89,7 +93,7 @@ const SelectPractice = ({ variables = null, label, onChange }) => {
     variables,
     fetchPolicy: 'network-only'
   })
-  if (loading) return <Loader />
+  if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (
     <FormSelect>
@@ -112,7 +116,7 @@ const SelectTemplate = ({ variables = null, label, onChange }) => {
     variables,
     fetchPolicy: 'network-only'
   })
-  if (loading) return <Loader />
+  if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (
     <FormSelect>
@@ -135,7 +139,7 @@ const SelectSource = ({ variables = null, label, onChange }) => {
     variables,
     fetchPolicy: 'network-only'
   })
-  if (loading) return <Loader />
+  if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (
     <FormSelect>
