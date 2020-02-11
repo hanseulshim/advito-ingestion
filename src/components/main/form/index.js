@@ -65,7 +65,13 @@ const SelectClient = ({ variables = null, label, onChange }) => {
   return (
     <FormSelect>
       <span>{label}</span>
-      <Select onChange={onChange}>
+      <Select
+        onChange={onChange}
+        showSearch
+        filterOption={(input, option) =>
+          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+        }
+      >
         {data.clientList.map((client, i) => {
           return (
             <Option key={'client' + i} value={client.id}>

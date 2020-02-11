@@ -7,7 +7,6 @@ import advitoLogo from 'assets/advitoLogo.png'
 const MainContainer = styled.div`
   width: 100%;
   display: flex;
-  height: 100%;
 `
 
 const FormContainer = styled.div`
