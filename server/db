@@ -1,5 +1,5 @@
--- ADVITO DB
--- SPRINT 1
+---------------------------------- ADVITO DB
+---------------------------------- SPRINT 1
 INSERT INTO advito_application (application_name, application_full, application_tag, is_active) VALUES ('Ingestion', 'Ingestion', 'ingest', true);
 INSERT INTO email_template (advito_application_id, template_name, template_type, email_subject, email_body) VALUES (4, 'Password Ingestion Recovery', 'Access', 'Ingestion: Password Reset', '<!DOCTYPE html>
 <html lang="en">
