@@ -8,7 +8,6 @@ export default {
         return Client.query()
         .alias('c')
         .joinRelated('applications', {alias: 'a'})
-        .where('a.id', ADVITO_INGESTION_APPLICATION)
         .andWhere('c.isActive', true);
       } else {
         return Client.query().where('id', user.clientId)
