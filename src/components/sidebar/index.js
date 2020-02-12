@@ -52,7 +52,9 @@ const MyApplications = () => {
 }
 
 const SampleTemplates = () => {
-  const { loading, error, data } = useQuery(SAMPLE_TEMPLATE_LIST)
+  const { loading, error, data } = useQuery(SAMPLE_TEMPLATE_LIST, {
+    fetchPolicy: 'network-only'
+  })
   if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (
