@@ -14,6 +14,7 @@ export default createGlobalStyle`
     font-weight: 300;
     font-size: 16px;
     line-height: 20px;
+    height:100%;
     
     @media (max-width : 1336px){
       font-size: 14px;
