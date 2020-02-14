@@ -6,10 +6,12 @@ import ApolloClient from 'apollo-boost'
 import { ApolloProvider } from '@apollo/react-hooks'
 import { Router } from 'react-router-dom'
 import history from './history'
+import { fetch } from 'isomorphic-unfetch'
 import { getToken, removeUser, getApi } from './helper'
 
 const client = new ApolloClient({
   uri: getApi(),
+  fetchOptions: { fetch },
   request: operation => {
     const sessiontoken = getToken()
     if (sessiontoken) {

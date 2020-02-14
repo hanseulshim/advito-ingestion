@@ -13,7 +13,6 @@ const Container = styled.div`
     ${props => props.theme.horizontalSpace};
   opacity: 0.95;
   flex: 1;
-  height: 100vh;
   min-width: 320px;
 `
 
