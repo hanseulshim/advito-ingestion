@@ -16,6 +16,7 @@ import { setUser } from 'helper'
 const Container = styled.div`
   width: 100%;
   height: 100%;
+  min-height: 1000px;
   background: ${props => props.theme.jungleMist};
   display: flex;
   flex-direction: column;

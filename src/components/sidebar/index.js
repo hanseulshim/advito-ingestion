@@ -14,6 +14,8 @@ const Container = styled.div`
   opacity: 0.95;
   flex: 1;
   min-width: 320px;
+  max-width: 400px;
+  height: 100%;
 `
 
 const ListContainer = styled.div`
