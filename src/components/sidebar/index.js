@@ -15,7 +15,6 @@ const Container = styled.div`
   flex: 1;
   min-width: 320px;
   max-width: 400px;
-  height: 100%;
 `
 
 const ListContainer = styled.div`
