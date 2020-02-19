@@ -8,9 +8,12 @@ import {
   TEMPLATE_LIST,
   SOURCE_LIST
 } from 'api/queries'
+import moment from 'moment'
 import { useQuery } from '@apollo/react-hooks'
 import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
+import { DatePicker } from 'antd'
+const { RangePicker } = DatePicker
 
 const Container = styled.div``
 
@@ -30,6 +33,17 @@ const Row = styled.div`
 
 const FormSelect = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  > span {
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    font-size: 0.85em;
+  }
+`
+
+const DateSelect = styled.div`
   display: flex;
   flex-direction: column;
 
@@ -165,7 +179,9 @@ const Form = () => {
     client: null,
     application: null,
     template: null,
-    source: null
+    source: null,
+    fileStartDate: null,
+    fileEndDate: null
   }
   const [inputs, setInputs] = useState(initialState)
 
@@ -198,6 +214,15 @@ const Form = () => {
         [key]: value
       }))
   }
+
+  const handleDateChange = (date, dateString) => {
+    setInputs(inputs => ({
+      ...inputs,
+      fileStartDate: dateString[0],
+      fileEndDate: dateString[1]
+    }))
+  }
+
   return (
     <Container>
       <StyledTitle>Ingestion Console</StyledTitle>
@@ -223,6 +248,16 @@ const Form = () => {
           variables={{ templateId: inputs.template || null }}
           onChange={e => handleInputChange('source', e)}
         />
+      </Row>
+      <Row>
+        <DateSelect>
+          <span>File Date Range</span>
+          <RangePicker
+            onChange={handleDateChange}
+            placeholder={['Start Date', 'End Date']}
+            style={{ width: '400px' }}
+          />
+        </DateSelect>
       </Row>
       <File type="file" onChange={e => handleInputChange('file', e)} />
       <div style={{ maxWidth: '900px' }}>
