@@ -11,7 +11,6 @@ const Container = styled.div`
   background: ${props => props.theme.concrete};
   padding: ${props => props.theme.verticalSpace}
     ${props => props.theme.horizontalSpace};
-  opacity: 0.95;
   flex: 1;
   min-width: 320px;
   max-width: 400px;
