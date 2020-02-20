@@ -9,6 +9,7 @@ class Validator:
 
     @classmethod
     def validate(cls, ingest_job_id, file_path):
+        validation_result = True
         df = pd.read_excel(file_path)
 
         for validator in cls.validators:
@@ -18,7 +19,8 @@ class Validator:
 
             # TODO: Write result to ingest job when specified
             if validation is False:
-                break
+                validation_result = False
+        return validation_result
 
     @staticmethod
     def credit_card_validation(df):
@@ -32,4 +34,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator.validate(ingest_job_id='123456789', file_path='Sample Data CC_V3.xlsx')
+    # Validator.validate(ingest_job_id='123456789', file_path='Sample Data CC_V3.xlsx')
+    Validator.validate(ingest_job_id='123456789', file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/Sample+Data+CC_V3.xlsx')
