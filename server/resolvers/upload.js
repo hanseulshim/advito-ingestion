@@ -1,13 +1,13 @@
 import AWS from 'aws-sdk'
 const {
-  AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  AWS_S3,
-  AWS_S3_KEY
+  ACCESS_KEY_ID,
+  SECRET_ACCESS_KEY,
+  S3,
+  S3_KEY
 } = process.env
 const s3 = new AWS.S3({
-  accessKeyId: AWS_ACCESS_KEY_ID,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY
+  accessKeyId: ACCESS_KEY_ID,
+  secretAccessKey: SECRET_ACCESS_KEY
 })
 
 export default {
@@ -22,8 +22,8 @@ export default {
       )
       try {
         const params = {
-          Bucket: AWS_S3,
-          Key: `${AWS_S3_KEY}/${fileName}`,
+          Bucket: S3,
+          Key: `${S3_KEY}/${fileName}`,
           Body: base64Data,
           ContentEncoding: 'base64'
         }
