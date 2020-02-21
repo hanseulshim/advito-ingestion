@@ -22,14 +22,7 @@ export default {
         'base64'
       )
       try {
-        const params = {
-          Bucket: S3,
-          Key: `${S3_KEY}/${fileName}`,
-          Body: base64Data,
-          ContentEncoding: 'base64'
-        }
-        await s3.upload(params).promise()
-        await JobIngestion.query().insert({
+        const job = await JobIngestion.query().insert({
           advitoUserId: user.id,
           clientId,
           advitoApplicationTemplateSourceId: sourceId,
@@ -37,6 +30,13 @@ export default {
           dataEndDate,
           originalFileName: fileName
         })
+        const params = {
+          Bucket: S3,
+          Key: `${S3_KEY}/${job.id}_${fileName}`,
+          Body: base64Data,
+          ContentEncoding: 'base64'
+        }
+        await s3.upload(params).promise()
         return true
       } catch (err) {
         console.log(err);
