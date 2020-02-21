@@ -28,6 +28,10 @@ const ErrorMessage = styled.div`
   color: ${props => props.theme.deepBlush};
 `
 
+const SuccessMessage = styled.div`
+  color: ${props => props.theme.easternWind};
+`
+
 const toBase64 = file =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -39,6 +43,7 @@ const toBase64 = file =>
 const FileUpload = ({ disabled }) => {
   const [file, setFile] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [uploadFile] = useMutation(UPLOAD_FILE)
 
   const dummyRequest = ({ file, onSuccess }) => {
@@ -56,6 +61,10 @@ const FileUpload = ({ disabled }) => {
           base64
         }
       })
+      setSuccessMessage('File uploaded successfully.')
+      setTimeout(() => {
+        setSuccessMessage('')
+      }, 5000)
     } catch (e) {
       setErrorMessage(e.message)
       setTimeout(() => {
@@ -91,6 +100,7 @@ const FileUpload = ({ disabled }) => {
           </p>
         </Dragger>
         <ErrorMessage>{errorMessage}</ErrorMessage>
+        <SuccessMessage>{successMessage}</SuccessMessage>
       </Container>
       <div style={{ maxWidth: '900px' }}>
         <UploadButton onClick={() => handleFileUpload()}>Upload</UploadButton>
