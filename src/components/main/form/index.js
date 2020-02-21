@@ -120,7 +120,9 @@ const Form = () => {
           />
         </DateSelect>
       </Row>
-      <FileUpload />
+      <FileUpload disabled={
+        Object.values(inputs).some(v => v === null)
+      } inputs={inputs} />
     </Container>
   )
 }

@@ -1,4 +1,5 @@
 import AWS from 'aws-sdk'
+import {JobIngestion} from '../models'
 const {
   ACCESS_KEY_ID,
   SECRET_ACCESS_KEY,
@@ -12,7 +13,7 @@ const s3 = new AWS.S3({
 
 export default {
   Mutation: {
-    uploadFile: async (_, { fileName, base64 }) => {
+    uploadFile: async (_, { clientId, sourceId, dataStartDate, dataEndDate, fileName, base64 }, {user}) => {
       const base64Data = new Buffer.from(
         base64.replace(
           /^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/,
@@ -28,6 +29,14 @@ export default {
           ContentEncoding: 'base64'
         }
         await s3.upload(params).promise()
+        await JobIngestion.query().insert({
+          advitoUserId: user.id,
+          clientId,
+          advitoApplicationTemplateSourceId: sourceId,
+          dataStartDate,
+          dataEndDate,
+          originalFileName: fileName
+        })
         return true
       } catch (err) {
         console.log(err);

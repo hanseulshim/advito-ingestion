@@ -40,7 +40,7 @@ const toBase64 = file =>
     reader.onerror = error => reject(error)
   })
 
-const FileUpload = ({ disabled }) => {
+const FileUpload = ({ inputs, disabled }) => {
   const [file, setFile] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -57,6 +57,10 @@ const FileUpload = ({ disabled }) => {
       const base64 = await toBase64(file)
       await uploadFile({
         variables: {
+          clientId: inputs.client,
+          sourceId: inputs.source,
+          dataStartDate: inputs.fileStartDate,
+          dataEndDate: inputs.fileEndDate,
           fileName: file.name,
           base64
         }
