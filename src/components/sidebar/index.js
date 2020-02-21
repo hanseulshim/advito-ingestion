@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { APPLICATION_LIST, SAMPLE_TEMPLATE_LIST } from 'api/queries'
 import SidebarUserInfo from './SidebarUserInfo'
-import { useQuery } from '@apollo/react-hooks'
+import { useQuery } from '@apollo/client'
 import Title from 'components/common/Typography'
 import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
@@ -11,10 +11,9 @@ const Container = styled.div`
   background: ${props => props.theme.concrete};
   padding: ${props => props.theme.verticalSpace}
     ${props => props.theme.horizontalSpace};
-  opacity: 0.95;
   flex: 1;
-  height: 100vh;
   min-width: 320px;
+  max-width: 400px;
 `
 
 const ListContainer = styled.div`
@@ -52,7 +51,9 @@ const MyApplications = () => {
 }
 
 const SampleTemplates = () => {
-  const { loading, error, data } = useQuery(SAMPLE_TEMPLATE_LIST)
+  const { loading, error, data } = useQuery(SAMPLE_TEMPLATE_LIST, {
+    fetchPolicy: 'network-only'
+  })
   if (loading) return <SpinLoader />
   if (error) return <ErrorMessage error={error} />
   return (

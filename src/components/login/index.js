@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Form, Icon, Input, Button } from 'antd'
 import { Redirect } from 'react-router-dom'
-import { useMutation } from '@apollo/react-hooks'
+import { useMutation } from '@apollo/client'
 import advitoLogo from 'assets/advitoLogo.png'
 import Footer from './Footer'
 import ResetPasswordModal from './ResetPasswordModal'
@@ -15,7 +15,8 @@ import { setUser } from 'helper'
 
 const Container = styled.div`
   width: 100%;
-  height: 100vh;
+  height: 100%;
+  min-height: 1000px;
   background: ${props => props.theme.jungleMist};
   display: flex;
   flex-direction: column;

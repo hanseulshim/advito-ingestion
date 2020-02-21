@@ -4,7 +4,7 @@ import { Popover } from 'antd'
 import Icon from 'components/common/Icon'
 import './NavMenu.css'
 import { LOGOUT } from 'api'
-import { useMutation } from '@apollo/react-hooks'
+import { useMutation } from '@apollo/client'
 import { SpinLoader } from 'components/common/Loader'
 import { removeUser, getUser } from 'helper'
 
