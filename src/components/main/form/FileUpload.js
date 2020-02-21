@@ -24,6 +24,10 @@ const UploadButton = styled.button`
     color: ${props => props.theme.white};
   }
 `
+const ErrorMessage = styled.div`
+  color: ${props => props.theme.deepBlush};
+`
+
 const toBase64 = file =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -33,8 +37,9 @@ const toBase64 = file =>
   })
 
 const FileUpload = ({ disabled }) => {
-  const [file, setFile] = useState('')
-  const [uploadFile, { loading, error, data }] = useMutation(UPLOAD_FILE)
+  const [file, setFile] = useState(null)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [uploadFile] = useMutation(UPLOAD_FILE)
 
   const dummyRequest = ({ file, onSuccess }) => {
     setTimeout(() => {
@@ -52,7 +57,10 @@ const FileUpload = ({ disabled }) => {
         }
       })
     } catch (e) {
-      console.error('Error in upload file', e)
+      setErrorMessage(e.message)
+      setTimeout(() => {
+        setErrorMessage('')
+      }, 5000)
     }
   }
 
@@ -82,6 +90,7 @@ const FileUpload = ({ disabled }) => {
             Click or drag file to this area to upload
           </p>
         </Dragger>
+        <ErrorMessage>{errorMessage}</ErrorMessage>
       </Container>
       <div style={{ maxWidth: '900px' }}>
         <UploadButton onClick={() => handleFileUpload()}>Upload</UploadButton>
