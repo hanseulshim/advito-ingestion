@@ -35,22 +35,6 @@ const DateSelect = styled.div`
   }
 `
 
-const Upload = styled.button`
-  color: ${props => props.theme.treePoppy};
-  border: 1px solid ${props => props.theme.treePoppy};
-  background: (0, 0, 0, 0);
-  border-radius: 15px;
-  padding: 2px 20px;
-  text-transform: uppercase;
-  font-size: 0.75em;
-  margin-left: 42.5%;
-  cursor: pointer;
-  :hover {
-    background: ${props => props.theme.treePoppy};
-    color: ${props => props.theme.white};
-  }
-`
-
 const Form = () => {
   const initialState = {
     client: null,
@@ -137,9 +121,6 @@ const Form = () => {
         </DateSelect>
       </Row>
       <FileUpload />
-      <div style={{ maxWidth: '900px' }}>
-        <Upload onClick={e => console.log('Uploaded!')}>Upload</Upload>
-      </div>
     </Container>
   )
 }

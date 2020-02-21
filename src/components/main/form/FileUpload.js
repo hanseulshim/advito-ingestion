@@ -1,51 +1,92 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-
 import { Upload, Icon, message } from 'antd'
-
+import { useMutation } from '@apollo/client'
+import { UPLOAD_FILE } from 'api/mutations'
 const { Dragger } = Upload
 
 const Container = styled.div`
   margin-bottom: ${props => props.theme.verticalSpace};
 `
 
-const FileUpload = ({ disabled }) => {
-  const [validation, setValidation] = useState('')
+const UploadButton = styled.button`
+  color: ${props => props.theme.treePoppy};
+  border: 1px solid ${props => props.theme.treePoppy};
+  background: (0, 0, 0, 0);
+  border-radius: 15px;
+  padding: 2px 20px;
+  text-transform: uppercase;
+  font-size: 0.75em;
+  margin-left: 42.5%;
+  cursor: pointer;
+  :hover {
+    background: ${props => props.theme.treePoppy};
+    color: ${props => props.theme.white};
+  }
+`
+const toBase64 = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = error => reject(error)
+  })
 
-  const onFileChange = info => {
-    const { status } = info.file
-    if (status !== 'uploading') {
-      console.log(info.file, info.fileList)
+const FileUpload = ({ disabled }) => {
+  const [file, setFile] = useState('')
+  const [uploadFile, { loading, error, data }] = useMutation(UPLOAD_FILE)
+
+  const dummyRequest = ({ file, onSuccess }) => {
+    setTimeout(() => {
+      onSuccess('ok')
+    }, 0)
+  }
+
+  const handleFileUpload = async () => {
+    try {
+      const base64 = await toBase64(file)
+      await uploadFile({
+        variables: {
+          fileName: file.name,
+          base64
+        }
+      })
+    } catch (e) {
+      console.error('Error in upload file', e)
     }
+  }
+
+  const onFileChange = async info => {
+    const { status } = info.file
     if (status === 'done') {
-      //   message.success(`${info.file.name} file uploaded successfully.`)
-      setValidation(
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
-      )
+      setFile(info.file.originFileObj)
     } else if (status === 'error') {
       message.error(`${info.file.name} file upload failed.`)
     }
   }
 
   return (
-    <Container>
-      <Dragger
-        disabled={disabled}
-        name={'file'}
-        multiple={false}
-        action={'https://www.mocky.io/v2/5cc8019d300000980a055e76'}
-        onChange={onFileChange}
-        onRemove={() => setValidation('')}
-      >
-        <p className="ant-upload-drag-icon">
-          <Icon type="inbox" />
-        </p>
-        <p className="ant-upload-text">
-          Click or drag file to this area to upload
-        </p>
-      </Dragger>
-      <div>{validation}</div>
-    </Container>
+    <>
+      <Container>
+        <Dragger
+          accept=".xlsx"
+          disabled={disabled}
+          multiple={false}
+          customRequest={dummyRequest}
+          onChange={onFileChange}
+        >
+          <p className="ant-upload-drag-icon">
+            <Icon type="inbox" />
+          </p>
+          <p className="ant-upload-text">
+            Click or drag file to this area to upload
+          </p>
+        </Dragger>
+      </Container>
+      <div style={{ maxWidth: '900px' }}>
+        <UploadButton onClick={() => handleFileUpload()}>Upload</UploadButton>
+      </div>
+    </>
   )
 }
 
