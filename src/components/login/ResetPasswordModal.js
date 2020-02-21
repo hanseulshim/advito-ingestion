@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useMutation } from '@apollo/react-hooks'
+import { useMutation } from '@apollo/client'
 import { Modal, Form, Input, Button } from 'antd'
 import { SEND_RESET_PASSWORD } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
