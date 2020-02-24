@@ -38,8 +38,8 @@ class Validator:
             axis=1)
         unmasked_data_rows = mask[mask == True].index.tolist()
         if unmasked_data_rows:
-            msg = 'Potential Unmasked Credit Card Number found in:\n{}'.format(
-                '\n'.join(['- Line {}'.format(line) for line in unmasked_data_rows])
+            msg = 'Potential Unmasked Credit Card Number found in:<br/>{}'.format(
+                '<br/>'.join(['- Line {}'.format(line) for line in unmasked_data_rows])
             )
             ret = (False, msg)
         else:
