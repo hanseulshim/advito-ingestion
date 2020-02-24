@@ -6,7 +6,7 @@ import advitoLogo from 'assets/advitoLogo.png'
 
 const MainContainer = styled.div`
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   display: flex;
 `
 

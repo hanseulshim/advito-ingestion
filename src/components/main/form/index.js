@@ -1,18 +1,18 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Title } from 'components/common/Typography'
-import { Select } from 'antd'
-import {
-  CLIENT_LIST,
-  PRACTICE_AREA_LIST,
-  TEMPLATE_LIST,
-  SOURCE_LIST
-} from 'api/queries'
-import { useQuery } from '@apollo/react-hooks'
-import { SpinLoader } from 'components/common/Loader'
-import ErrorMessage from 'components/common/ErrorMessage'
+import { DatePicker } from 'antd'
+import FileUpload from './FileUpload'
+import SelectPractice from './SelectPractice'
+import SelectClient from './SelectClient'
+import SelectTemplate from './SelectTemplate'
+import SelectSource from './SelectSource'
+const { RangePicker } = DatePicker
 
-const Container = styled.div``
+const Container = styled.div`
+  width: 900px;
+  padding-bottom: ${props => props.theme.verticalSpace};
+`
 
 const StyledTitle = styled(Title)`
   margin-bottom: ${props => props.theme.verticalSpace};
@@ -21,15 +21,10 @@ const StyledTitle = styled(Title)`
 const Row = styled.div`
   display: flex;
   margin-bottom: ${props => props.theme.verticalSpace};
-
-  > div {
-    max-width: 400px;
-    margin-right: ${props => props.theme.horizontalSpace};
-  }
+  justify-content: space-between;
 `
 
-const FormSelect = styled.div`
-  flex: 1;
+const DateSelect = styled.div`
   display: flex;
   flex-direction: column;
 
@@ -38,11 +33,6 @@ const FormSelect = styled.div`
     margin-bottom: 2px;
     font-size: 0.85em;
   }
-`
-
-const File = styled.input`
-  display: block;
-  margin-bottom: ${props => props.theme.verticalSpace};
 `
 
 const Upload = styled.button`
@@ -60,112 +50,15 @@ const Upload = styled.button`
     color: ${props => props.theme.white};
   }
 `
-const { Option } = Select
-
-const SelectClient = ({ variables = null, label, onChange }) => {
-  const { loading, error, data } = useQuery(CLIENT_LIST)
-  if (loading) return <SpinLoader />
-  if (error) return <ErrorMessage error={error} />
-  return (
-    <FormSelect>
-      <span>{label}</span>
-      <Select
-        onChange={onChange}
-        showSearch
-        filterOption={(input, option) =>
-          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-        }
-      >
-        {data.clientList.map((client, i) => {
-          return (
-            <Option key={'client' + i} value={client.id}>
-              {client.clientName}
-            </Option>
-          )
-        })}
-      </Select>
-    </FormSelect>
-  )
-}
-
-const SelectPractice = ({ variables = null, label, onChange }) => {
-  const { loading, error, data } = useQuery(PRACTICE_AREA_LIST, {
-    variables,
-    fetchPolicy: 'network-only'
-  })
-  if (loading) return <SpinLoader />
-  if (error) return <ErrorMessage error={error} />
-  return (
-    <FormSelect>
-      <span>{label}</span>
-      <Select onChange={onChange}>
-        {data.practiceAreaList.map((application, i) => {
-          return (
-            <Option key={'application' + i} value={application.id}>
-              {application.applicationName}
-            </Option>
-          )
-        })}
-      </Select>
-    </FormSelect>
-  )
-}
-
-const SelectTemplate = ({ variables = null, label, onChange }) => {
-  const { loading, error, data } = useQuery(TEMPLATE_LIST, {
-    variables,
-    fetchPolicy: 'network-only'
-  })
-  if (loading) return <SpinLoader />
-  if (error) return <ErrorMessage error={error} />
-  return (
-    <FormSelect>
-      <span>{label}</span>
-      <Select onChange={onChange}>
-        {data.templateList.map((template, i) => {
-          return (
-            <Option key={'template' + i} value={template.id}>
-              {template.templateName}
-            </Option>
-          )
-        })}
-      </Select>
-    </FormSelect>
-  )
-}
-
-const SelectSource = ({ variables = null, label, onChange }) => {
-  const { loading, error, data } = useQuery(SOURCE_LIST, {
-    variables,
-    fetchPolicy: 'network-only'
-  })
-  if (loading) return <SpinLoader />
-  if (error) return <ErrorMessage error={error} />
-  return (
-    <FormSelect>
-      <span>{label}</span>
-      <Select onChange={onChange}>
-        {data.sourceList.map((source, i) => {
-          return (
-            <Option key={'source' + i} value={source.id}>
-              {source.sourceName}
-            </Option>
-          )
-        })}
-        <Option key={'unlisted'} value={'unlisted'}>
-          Source not listed
-        </Option>
-      </Select>
-    </FormSelect>
-  )
-}
 
 const Form = () => {
   const initialState = {
     client: null,
     application: null,
     template: null,
-    source: null
+    source: null,
+    fileStartDate: null,
+    fileEndDate: null
   }
   const [inputs, setInputs] = useState(initialState)
 
@@ -198,6 +91,15 @@ const Form = () => {
         [key]: value
       }))
   }
+
+  const handleDateChange = (date, dateString) => {
+    setInputs(inputs => ({
+      ...inputs,
+      fileStartDate: dateString[0],
+      fileEndDate: dateString[1]
+    }))
+  }
+
   return (
     <Container>
       <StyledTitle>Ingestion Console</StyledTitle>
@@ -224,7 +126,17 @@ const Form = () => {
           onChange={e => handleInputChange('source', e)}
         />
       </Row>
-      <File type="file" onChange={e => handleInputChange('file', e)} />
+      <Row>
+        <DateSelect>
+          <span>File Date Range</span>
+          <RangePicker
+            onChange={handleDateChange}
+            placeholder={['Start Date', 'End Date']}
+            style={{ width: '400px' }}
+          />
+        </DateSelect>
+      </Row>
+      <FileUpload />
       <div style={{ maxWidth: '900px' }}>
         <Upload onClick={e => console.log('Uploaded!')}>Upload</Upload>
       </div>
