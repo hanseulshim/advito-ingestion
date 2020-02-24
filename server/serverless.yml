@@ -16,6 +16,7 @@ provider:
     REGION: ${self:custom.environment.REGION}
     S3: ${self:custom.environment.S3}
     S3_KEY: ${self:custom.environment.S3_KEY}
+    URL: ${self:custom.environment.URL}
   vpc:
     securityGroupIds:
       - 'sg-09b7d9888c893594d'

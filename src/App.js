@@ -24,7 +24,7 @@ const App = () => (
     <GlobalStyle />
     <Switch>
       <Route path="/login" component={Login} />
-      <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/resetpassword" component={ResetPassword} />
       <PrivateRoute path="/" exact component={Main} />
     </Switch>
   </ThemeProvider>

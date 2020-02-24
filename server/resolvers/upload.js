@@ -32,7 +32,7 @@ export default {
         })
         const params = {
           Bucket: S3,
-          Key: `${S3_KEY}/${job.id}_${fileName}`,
+          Key: `${S3_KEY}/${job.id}_${Date.now()}_${fileName}`,
           Body: base64Data,
           ContentEncoding: 'base64'
         }
