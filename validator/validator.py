@@ -9,28 +9,42 @@ class Validator:
 
     @classmethod
     def validate(cls, ingest_job_id, file_path):
-        validation_result = True
-        df = pd.read_excel(file_path)
+        validation_passed = False
+        msg = None
+        df = pd.read_excel(file_path, dtype=str)
 
         for validator in cls.validators:
-            validation = getattr(cls, validator)(df)
-            print('{} {}'.format(validator,
-                                 'passed' if validation else 'failed'))
+            validation_passed, msg = getattr(cls, validator)(df)
+            print('{} {} {}'.format(validator,
+                                    'passed' if validation_passed else 'failed',
+                                    msg))
 
             # TODO: Write result to ingest job when specified
-            if validation is False:
-                validation_result = False
-        return validation_result
+        return validation_passed, msg
 
     @staticmethod
-    def credit_card_validation(df):
+    def credit_card_validation(data):
+        def clean_data(field):
+            if field:
+                field = field.strip().replace('-', '').replace(' ', '')
+            return field
+
+        df = data.copy()
+        for column in df.columns.tolist():
+            df[column] = df[column].astype(str).apply(clean_data)
+
         mask = df.apply(
             lambda row: row.astype(str).str.contains(r'\d{15}', regex=True).any(),
             axis=1)
-        # TODO: Remove print and Return tuple (Result, df with errors)
-        if mask.any():
-            print(df[mask])
-        return False if mask.any() else True
+        unmasked_data_rows = mask[mask == True].index.tolist()
+        if unmasked_data_rows:
+            msg = 'Potential Unmasked Credit Card Number found in:\n{}'.format(
+                '\n'.join(['- Line {}'.format(line) for line in unmasked_data_rows])
+            )
+            ret = (False, msg)
+        else:
+            ret = (True, )
+        return ret
 
 
 if __name__ == '__main__':
