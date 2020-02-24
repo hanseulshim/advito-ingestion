@@ -31,11 +31,11 @@ functions:
       - http:
           path: /validation
           method: get
-#          cors:
-#            headers:
-#              - Content-Type
-#              - Pragma
-#              - Cache-Control
+          cors:
+            headers:
+              - Content-Type
+              - Pragma
+              - Cache-Control
 
 
 plugins:
