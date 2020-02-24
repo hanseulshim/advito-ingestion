@@ -13,7 +13,7 @@ def api_get(event, context):
     from validator import Validator
     res, msg = Validator.validate(
         ingest_job_id='123456789',
-        file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/Sample+Data+CC_V3.xlsx')
+        file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/ValidationTest.xlsx')
 
     return {
         'statusCode': 200,
