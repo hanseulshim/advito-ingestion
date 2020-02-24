@@ -48,5 +48,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    # Validator.validate(ingest_job_id='123456789', file_path='Sample Data CC_V3.xlsx')
-    Validator.validate(ingest_job_id='123456789', file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/Sample+Data+CC_V3.xlsx')
+    # Validator.validate(ingest_job_id='123456789', file_path='ValidationTest.xlsx')
+    Validator.validate(ingest_job_id='123456789', file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/ValidationTest.xlsx')
