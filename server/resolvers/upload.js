@@ -25,7 +25,7 @@ export default {
         const job = await JobIngestion.query().insert({
           advitoUserId: user.id,
           clientId,
-          advitoApplicationTemplateSourceId: sourceId === 0 ? null : sourceId,
+          advitoApplicationTemplateSourceId: sourceId,
           dataStartDate,
           dataEndDate,
           originalFileName: fileName

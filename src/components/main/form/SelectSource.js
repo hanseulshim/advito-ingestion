@@ -27,7 +27,7 @@ const SelectSource = ({ variables = null, label, onChange }) => {
             </Option>
           )
         })}
-        <Option key={'unlisted'} value={0}>
+        <Option key={'unlisted'} value={null}>
           Source not listed
         </Option>
       </Select>
