@@ -192,42 +192,45 @@ class Matcher:
         print('\n3rd Condition')
         matched_id = None
         score_threshold = 100
-        # filter hotel name match ids based on score_threshold
-        hn_match_ids = set(
-            [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
-             if score >= score_threshold])
-        # build query based on params
-        query = (
-            self.hotel_session.query(HotelProperty)
-            .filter(HotelProperty.id.in_(hn_match_ids))
-        )
-        if city_name:
-            query = query.filter(func.lower(HotelProperty.city) == city_name.lower())
-        if country_code:
-            geo_country = (
-                self.advito_session.query(GeoCountry)
-                .filter(or_(
-                    GeoCountry.country_code_2char == country_code,
-                    GeoCountry.country_code_3char == country_code,
-                    GeoCountry.country_code_numeric == country_code,
-                ))
-                .first()
+        if pd.isna(city_name) or pd.isna(country_code):
+            print('City Name and Country Code must be specified')
+        else:
+            # filter hotel name match ids based on score_threshold
+            hn_match_ids = set(
+                [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
+                 if score >= score_threshold])
+            # build query based on params
+            query = (
+                self.hotel_session.query(HotelProperty)
+                .filter(HotelProperty.id.in_(hn_match_ids))
             )
-            if geo_country:
-                query = query.filter(HotelProperty.geo_country_id == geo_country.id)
-        if state_code:
-            geo_state = (
-                self.advito_session.query(GeoState)
-                    .filter(GeoState.state_code == state_code)
+            if city_name and not pd.isna(city_name):
+                query = query.filter(func.lower(HotelProperty.city) == city_name.lower())
+            if country_code and not pd.isna(country_code):
+                geo_country = (
+                    self.advito_session.query(GeoCountry)
+                    .filter(or_(
+                        GeoCountry.country_code_2char == country_code,
+                        GeoCountry.country_code_3char == country_code,
+                        GeoCountry.country_code_numeric == country_code,
+                    ))
                     .first()
-            )
-            if geo_state:
-                query = query.filter(HotelProperty.geo_state_id == geo_state.id)
-        hp_objs = query.all()
+                )
+                if geo_country:
+                    query = query.filter(HotelProperty.geo_country_id == geo_country.id)
+            if state_code and not pd.isna(state_code):
+                geo_state = (
+                    self.advito_session.query(GeoState)
+                        .filter(GeoState.state_code == state_code)
+                        .first()
+                )
+                if geo_state:
+                    query = query.filter(HotelProperty.geo_state_id == geo_state.id)
+            hp_objs = query.all()
 
-        if len(hp_objs) == 1:
-            matched_id = hp_objs[0].id
-            print('Third Condition Satisfied, match_id {}'.format(matched_id))
+            if len(hp_objs) == 1:
+                matched_id = hp_objs[0].id
+                print('Third Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
     def __4nd_condition(self, hotel_name_matches, phone_number):
@@ -241,7 +244,7 @@ class Matcher:
         matched_id = None
         hotel_name_score_threshold = 90
         phone_number_score_threshold = 90
-        if phone_number:
+        if phone_number and not pd.isna(phone_number):
             # clean phone
             phone = (
                 phone_number
@@ -271,7 +274,7 @@ class Matcher:
             if len(hp_objs) == 1:
                 matched_id = list(hp_objs)[0]
                 print('Fourth Condition Satisfied, match_id {}'.format(matched_id))
-            return matched_id
+        return matched_id
 
     @staticmethod
     def __fuzzy_match(var, choices, limit=50):
