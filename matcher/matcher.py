@@ -22,6 +22,68 @@ class Matcher:
         tmp = df.apply(lambda row: self._match(row), axis=1)
         print(tmp)
 
+    def _match(self, row):
+        print('\n# # # # #\nRow: {} Property Name: {}'.format(
+            row.name, row['Hotel Name']))
+        matched_id = None
+        ids_matched_no, msg = self.__match_ids(row)
+        # 1st condition -> 2 or more IDs matched
+        if ids_matched_no >= 2:
+            matched_id = msg
+            print('First Condition Satisfied, match ID {}'.format(matched_id))
+        # continue with algorithm for ids_matched in 0 or 1
+        else:
+            # check if error happened
+            if ids_matched_no == -1:
+                print('Matching ID error: {}. Proceed with Matching'.format(msg))
+            # use Fuzzy to match hotel_name
+            if matched_id is None:
+                print('Proceed with fuzzy match')
+                # hotel name match
+                hp_property_names = pd.read_sql(
+                    self.hotel_session.query(HotelProperty.id,
+                                             HotelProperty.property_name)
+                        .statement,
+                    self.hotel_session.bind).set_index('id')
+                hotel_name_matches = self.__fuzzy_match(
+                    row['Hotel Name'], hp_property_names['property_name'])
+
+                # 2nd condition -> 1 ID and 75% hotel_name
+                if matched_id is None:
+                    matched_id = self.__2nd_condition(
+                        hotel_name_matches=hotel_name_matches,
+                        ids_query_dict=self.__build_ids_query_dict(row)
+                    )
+
+                # 3rd condition -> 100% hotel_name, city, state and country code
+                if matched_id is None:
+                    matched_id = self.__3rd_condition(
+                        hotel_name_matches=hotel_name_matches,
+                        city_name=row['City Name'],
+                        country_code=row['Country Code'],
+                        state_code=row['State Code']
+                    )
+
+                # 4th condition -> 90% hotel_name, 90% clean_phone
+                if matched_id is None:
+                    matched_id = self.__4nd_condition(hotel_name_matches, row['Phone Number'])
+                print(matched_id)
+        return matched_id
+
+    @staticmethod
+    def __build_ids_dict(row):
+        return {
+            'id_amadeus': row['Amadeus Property ID'],
+            'id_apollo': row['Apollo Property ID'],
+            'id_sabre': row['Sabre Property ID'],
+            'id_worldspan': row['WorldSpan Property ID']
+        }
+
+    def __build_ids_query_dict(self, row):
+        ids_dict = self.__build_ids_dict(row)
+        return {key: value for key, value in ids_dict.items()
+                if not pd.isna(value)}
+
     def __match_ids(self, row):
         """
         Return (number of matched ids, msg)
@@ -29,15 +91,8 @@ class Matcher:
         msg: error message if error else hotel_property_id
         """
         # create ids dict
-        ids_dict = {
-            'id_amadeus': row['Amadeus Property ID'],
-            'id_apollo': row['Apollo Property ID'],
-            'id_sabre': row['Sabre Property ID'],
-            'id_worldspan': row['WorldSpan Property ID']
-        }
-        # build query dict needed for scenario where some keys are missing
-        query_dict = {key: value for key, value in ids_dict.items()
-                      if not pd.isna(value)}
+        ids_dict = self.__build_ids_query_dict(row)
+        query_dict = self.__build_ids_query_dict(row)
         if not query_dict:
             print('There are no values for IDs specified')
             ret = (0, None)
@@ -46,8 +101,7 @@ class Matcher:
                 self.hotel_session.query(HotelProperty)
                     .filter(or_(
                         *[getattr(HotelProperty, key) == value
-                          for key, value in ids_dict.items()
-                          if not pd.isna(value)]))
+                          for key, value in query_dict.items()]))
                     .all()
             )
             # none of the records are matched
@@ -91,136 +145,37 @@ class Matcher:
               '{}'.format(*ret))
         return ret
 
-    @staticmethod
-    def __fuzzy_match(var, choices, limit=50):
-        print('\nFuzzy Match: {}'.format(var))
-        ret = list()
-
-        ratio = process.extract(var, choices, scorer=fuzz.ratio, limit=limit)
-        print('Ratio')
-        ret.extend(ratio)
-        for item in ratio:
-            print(item)
-
-        partial_ratio = process.extract(var, choices, scorer=fuzz.partial_ratio, limit=limit)
-        ret.extend(partial_ratio)
-        print('Partial Ratio')
-        for item in partial_ratio:
-            print(item)
-
-        token_set_ratio = process.extract(var, choices, scorer=fuzz.token_set_ratio, limit=limit)
-        ret.extend(token_set_ratio)
-        print('Token Set Ratio')
-        for item in token_set_ratio:
-            print(item)
-
-        return ret
-
-    def _match(self, row):
-        print('\n# # # # #\nRow: {} Property Name: {}'.format(
-            row.name, row['Hotel Name']))
-        matched_id = None
-        ids_matched_no, msg = self.__match_ids(row)
-        return
-        # 1st condition -> 2 or more IDs matched
-        if ids_matched_no >= 2:
-            print('First Condition Satisfied')
-            matched_id = msg
-        # continue with algorithm for ids_matched in 0 or 1
-        else:
-            # check if error happened
-            if ids_matched_no == -1:
-                print('Matching ID error: {}. Proceed with Matching'.format(msg))
-            # match hotel_name which is needed for 2nd, 3rd and 4th condition
-            # check if there is hotel_property with exact name which will
-            # satisfy 2nd condition -> 1 ID and 75% hotel_name
-            # in order to avoid losing time in fuzzy search
-            hp_hn_match_objs = (
-                self.hotel_session.query(HotelProperty)
-                .filter(HotelProperty.property_name == row['Hotel Name'])
-                .all()
-            )
-
-            if len(hp_hn_match_objs) == 1 and ids_matched_no == 1:
-                print('Second condition satisfied. '
-                      'Hotel Name 100% match found in hotel_property '
-                      'along with one ID')
-                matched_id = hp_hn_match_objs[0].id
-            # use Fuzzy to match hotel_name
-            else:
-                print('Hotel Name 100% match not found, proceed with fuzzy '
-                      'match')
-                # hotel name match
-                hp_property_names = pd.read_sql(
-                    self.hotel_session.query(HotelProperty.id,
-                                             HotelProperty.property_name)
-                        .statement,
-                    self.hotel_session.bind).set_index('id')
-                hotel_name_matches = self.__fuzzy_match(
-                    row['Hotel Name'], hp_property_names['property_name'])
-
-                # 2nd condition -> 1 ID and 75% hotel_name
-                if matched_id is None:
-                    matched_id = self.__2nd_condition(
-                        hotel_name_matches=hotel_name_matches,
-                        amadeus_id=row['Amadeus Property ID'],
-                        apollo_id=row['Apollo Property ID'],
-                        sabre_id=row['Sabre Property ID'],
-                        worldspan_id=row['WorldSpan Property ID']
-                    )
-
-                # # 3rd condition -> 100% hotel_name, city, state and country code
-                # if matched_id is None:
-                #     matched_id = self.__3rd_condition(
-                #         hotel_name_matches=hotel_name_matches,
-                #         city_name=row['City Name'],
-                #         country_code=row['Country Code'],
-                #         state_code=row['State Code']
-                #     )
-
-                # 4th condition -> 90% hotel_name, 90% clean_phone
-                if matched_id is None:
-                    matched_id = self.__4nd_condition(hotel_name_matches, row['Phone Number'])
-                print(matched_id)
-
-        return matched_id
-
     def __2nd_condition(self,
                         hotel_name_matches,
-                        amadeus_id,
-                        apollo_id,
-                        sabre_id,
-                        worldspan_id):
+                        ids_query_dict):
         """
         2nd condition -> 1 ID and 75% hotel_name
-        :param amadeus_id:
-        :param apollo_id:
-        :param sabre_id:
-        :param worldspan_id:
         :param hotel_name_matches:
+        :param ids_query_dict:
         :return:
         """
         print('\n2nd Condition')
         matched_id = None
         score_threshold = 75
-        # filter hotel name match ids based on score_threshold
-        hn_match_ids = set(
-            [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
-             if score >= score_threshold])
-        # cross match on hp_match_ids_set and matched_ids
-        hp_objs = (
-            self.hotel_session.query(HotelProperty)
-            .filter(HotelProperty.id.in_(hn_match_ids))
-            .filter(
-                (HotelProperty.id_amadeus == amadeus_id)
-                | (HotelProperty.id_apollo == apollo_id)
-                | (HotelProperty.id_sabre == sabre_id)
-                | (HotelProperty.id_worldspan == worldspan_id))
-            .all()
-        )
-        if len(hp_objs) == 1:
-            matched_id = hp_objs[0].id
-            print('Second Condition Satisfied, match_id {}'.format(matched_id))
+        if not ids_query_dict:
+            print('There are no values for IDs specified')
+        else:
+            # filter hotel name match ids based on score_threshold
+            hn_match_ids = set(
+                [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
+                 if score >= score_threshold])
+            # cross match on hp_match_ids_set and matched_ids
+            hp_objs = (
+                self.hotel_session.query(HotelProperty)
+                .filter(HotelProperty.id.in_(hn_match_ids))
+                .filter(or_(
+                    *[getattr(HotelProperty, key) == value
+                      for key, value in ids_query_dict.items()]))
+                .all()
+            )
+            if len(hp_objs) == 1:
+                matched_id = hp_objs[0].id
+                print('Second Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
     def __3rd_condition(self, hotel_name_matches, city_name, country_code, state_code):
@@ -313,6 +268,35 @@ class Matcher:
                 matched_id = list(hp_objs)[0]
                 print('Fourth Condition Satisfied, match_id {}'.format(matched_id))
             return matched_id
+
+    @staticmethod
+    def __fuzzy_match(var, choices, limit=50):
+        print('\nFuzzy Match: {}'.format(var))
+        ret = list()
+
+        ratio = process.extract(var, choices, scorer=fuzz.ratio, limit=limit)
+        print('Ratio')
+        ret.extend(ratio)
+        for item in ratio:
+            print(item)
+
+        print(ret[0])
+        if ret[0][1] == 100:
+            print('Ratio scored 100%, no need to proceed with other algorithms')
+        else:
+            partial_ratio = process.extract(var, choices, scorer=fuzz.partial_ratio, limit=limit)
+            ret.extend(partial_ratio)
+            print('Partial Ratio')
+            for item in partial_ratio:
+                print(item)
+
+            token_set_ratio = process.extract(var, choices, scorer=fuzz.token_set_ratio, limit=limit)
+            ret.extend(token_set_ratio)
+            print('Token Set Ratio')
+            for item in token_set_ratio:
+                print(item)
+
+        return ret
 
 
 if __name__ == '__main__':
