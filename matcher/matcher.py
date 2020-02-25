@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import func, or_
 
-from db.db import HotelSession
+from db.db import HotelSession, AdvitoSession
 from db.hotel_models import HotelProperty
 from db.advito_models import GeoCountry, GeoState
 
@@ -11,9 +11,11 @@ from fuzzywuzzy import fuzz, process
 class Matcher:
     def __init__(self):
         self.hotel_session = HotelSession()
+        self.advito_session = AdvitoSession()
 
     def __del__(self):
         self.hotel_session.close()
+        self.advito_session.close()
 
     def match(self, ingest_job_id, file_path, sheet_name=None):
         self.hotel_session = HotelSession()
@@ -202,24 +204,26 @@ class Matcher:
         if city_name:
             query = query.filter(func.lower(HotelProperty.city) == city_name.lower())
         if country_code:
-            query = (
-                query
-                .join(GeoCountry,
-                      GeoCountry.id == HotelProperty.geo_country_id)
-                .filter(
-                    (GeoCountry.country_code_2char == country_code)
-                    | (GeoCountry.country_code_3char == country_code)
-                    | (GeoCountry.country_code_numeric == country_code))
+            geo_country = (
+                self.advito_session.query(GeoCountry)
+                .filter(or_(
+                    GeoCountry.country_code_2char == country_code,
+                    GeoCountry.country_code_3char == country_code,
+                    GeoCountry.country_code_numeric == country_code,
+                ))
+                .first()
             )
+            if geo_country:
+                query = query.filter(HotelProperty.geo_country_id == geo_country.id)
         if state_code:
-            query = (
-                query
-                .join(GeoState,
-                      GeoState.id == HotelProperty.geo_state_id)
-                .filter(GeoState.state_code == state_code)
+            geo_state = (
+                self.advito_session.query(GeoState)
+                    .filter(GeoState.state_code == state_code)
+                    .first()
             )
+            if geo_state:
+                query = query.filter(HotelProperty.geo_state_id == geo_state.id)
         hp_objs = query.all()
-        print(hp_objs)
 
         if len(hp_objs) == 1:
             matched_id = hp_objs[0].id
