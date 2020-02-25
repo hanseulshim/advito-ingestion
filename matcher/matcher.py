@@ -17,12 +17,8 @@ class Matcher:
 
     def match(self, ingest_job_id, file_path, sheet_name=None):
         self.hotel_session = HotelSession()
-
         df = pd.read_excel(
             file_path, nrows=10, sheet_name=sheet_name, dtype=str)
-        # print(df.shape)
-        # print(df)
-
         tmp = df.apply(lambda row: self._match(row), axis=1)
         print(tmp)
 
@@ -64,18 +60,33 @@ class Matcher:
             ret = (ids_matched_no, hp_obj.id)
         # more than one record is matched
         elif len(objs) > 1:
-            msg = 'Keys present for more than one record in hotel_property: {}'.format(
-                ','.join(['{} {}'.format(key, value)
-                          for key, value in ids_dict.items()]))
+            # figure one which ids are making issues
+            matched_ids = dict()
+            for key, value in ids_dict.items():
+                object_ids = list()
+                # check which key is found in which objects
+                for obj in objs:
+                    if value == getattr(obj, key):
+                        object_ids.append(str(obj.id))
+                matched_ids[key] = object_ids
+            msg = (
+                'Keys present for more than one record in hotel_property: {}'
+                .format('; '.join(
+                    ['{} {} present in hotel_property_ids {}'.format(
+                        key,
+                        value,
+                        ', '.join(matched_ids[key]) if matched_ids[key] else None)
+                     for key, value in ids_dict.items()]
+                )))
             ret = (-1, msg)
         else:
             ret = (0, None)
-        print(ret)
+        print('Number of matched IDs: {}, HotelPropertyID/error_message: {}'.format(*ret))
         return ret
 
     @staticmethod
     def __fuzzy_match(var, choices, limit=50):
-        print('\n\n{}'.format(var))
+        print('\nFuzzy Match: {}'.format(var))
         ret = list()
 
         ratio = process.extract(var, choices, scorer=fuzz.ratio, limit=limit)
@@ -99,19 +110,20 @@ class Matcher:
         return ret
 
     def _match(self, row):
+        print('\n# # # # #\nRow: {} Property Name: {}'.format(
+            row.name, row['Hotel Name']))
         matched_id = None
-
         ids_matched_no, msg = self.__match_ids(row)
-        print('Number of matched IDs: {}'.format(ids_matched_no))
-
-        # check if error happened
-        if ids_matched_no == -1:
-            matched_id = msg
+        return
         # 1st condition -> 2 or more IDs matched
-        elif ids_matched_no >= 2:
+        if ids_matched_no >= 2:
+            print('First Condition Satisfied')
             matched_id = msg
         # continue with algorithm for ids_matched in 0 or 1
         else:
+            # check if error happened
+            if ids_matched_no == -1:
+                print('Matching ID error: {}. Proceed with Matching'.format(msg))
             # match hotel_name which is needed for 2nd, 3rd and 4th condition
             # check if there is hotel_property with exact name which will
             # satisfy 2nd condition -> 1 ID and 75% hotel_name
@@ -121,11 +133,16 @@ class Matcher:
                 .filter(HotelProperty.property_name == row['Hotel Name'])
                 .all()
             )
+
             if len(hp_hn_match_objs) == 1 and ids_matched_no == 1:
-                print('Hotel Name 100% match found in hotel_property')
+                print('Second condition satisfied. '
+                      'Hotel Name 100% match found in hotel_property '
+                      'along with one ID')
                 matched_id = hp_hn_match_objs[0].id
             # use Fuzzy to match hotel_name
             else:
+                print('Hotel Name 100% match not found, proceed with fuzzy '
+                      'match')
                 # hotel name match
                 hp_property_names = pd.read_sql(
                     self.hotel_session.query(HotelProperty.id,
@@ -145,14 +162,14 @@ class Matcher:
                         worldspan_id=row['WorldSpan Property ID']
                     )
 
-                # 3rd condition -> 100% hotel_name, city, state and country code
-                if matched_id is None:
-                    matched_id = self.__3rd_condition(
-                        hotel_name_matches=hotel_name_matches,
-                        city_name=row['City Name'],
-                        country_code=row['Country Code'],
-                        state_code=row['State Code']
-                    )
+                # # 3rd condition -> 100% hotel_name, city, state and country code
+                # if matched_id is None:
+                #     matched_id = self.__3rd_condition(
+                #         hotel_name_matches=hotel_name_matches,
+                #         city_name=row['City Name'],
+                #         country_code=row['Country Code'],
+                #         state_code=row['State Code']
+                #     )
 
                 # 4th condition -> 90% hotel_name, 90% clean_phone
                 if matched_id is None:
@@ -176,7 +193,7 @@ class Matcher:
         :param hotel_name_matches:
         :return:
         """
-        print('2nd Condition')
+        print('\n2nd Condition')
         matched_id = None
         score_threshold = 75
         # filter hotel name match ids based on score_threshold
@@ -196,6 +213,7 @@ class Matcher:
         )
         if len(hp_objs) == 1:
             matched_id = hp_objs[0].id
+            print('Second Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
     def __3rd_condition(self, hotel_name_matches, city_name, country_code, state_code):
@@ -207,7 +225,7 @@ class Matcher:
         :param state_code:
         :return:
         """
-        print('3rd Condition')
+        print('\n3rd Condition')
         matched_id = None
         score_threshold = 100
         # filter hotel name match ids based on score_threshold
@@ -243,6 +261,7 @@ class Matcher:
 
         if len(hp_objs) == 1:
             matched_id = hp_objs[0].id
+            print('Third Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
     def __4nd_condition(self, hotel_name_matches, phone_number):
@@ -252,7 +271,7 @@ class Matcher:
         :param phone_number:
         :return:    None or hotel_property_id
         """
-        print('4th Condition')
+        print('\n4th Condition')
         matched_id = None
         hotel_name_score_threshold = 90
         phone_number_score_threshold = 90
@@ -285,10 +304,11 @@ class Matcher:
             hp_objs = hn_match_ids.intersection(pn_match_ids)
             if len(hp_objs) == 1:
                 matched_id = list(hp_objs)[0]
+                print('Fourth Condition Satisfied, match_id {}'.format(matched_id))
             return matched_id
 
 
 if __name__ == '__main__':
     Matcher().match(ingest_job_id='123456789',
-                    file_path='Hotel Agency Detailed SAMPLE - Client C  July-DeC 2019 BCD 1-27-20.xlsx',
+                    file_path='MatchingTest.xlsx',
                     sheet_name='Transaction Template')
