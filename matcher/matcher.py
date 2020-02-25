@@ -1,5 +1,5 @@
 import pandas as pd
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from db.db import HotelSession
 from db.hotel_models import HotelProperty
@@ -18,7 +18,7 @@ class Matcher:
     def match(self, ingest_job_id, file_path, sheet_name=None):
         self.hotel_session = HotelSession()
         df = pd.read_excel(
-            file_path, nrows=10, sheet_name=sheet_name, dtype=str)
+            file_path, nrows=8, sheet_name=sheet_name, dtype=str)
         tmp = df.apply(lambda row: self._match(row), axis=1)
         print(tmp)
 
@@ -35,53 +35,60 @@ class Matcher:
             'id_sabre': row['Sabre Property ID'],
             'id_worldspan': row['WorldSpan Property ID']
         }
-        # check if ids are present in hotel_property
-        objs = (
-            self.hotel_session.query(HotelProperty)
-            .filter(
-                (HotelProperty.id_amadeus == ids_dict['id_amadeus'])
-                | (HotelProperty.id_apollo == ids_dict['id_apollo'])
-                | (HotelProperty.id_sabre == ids_dict['id_sabre'])
-                | (HotelProperty.id_worldspan == ids_dict['id_worldspan'])
-            )
-            .all()
-        )
-        # none of the records are matched
-        if len(objs) == 0:
+        # build query dict needed for scenario where some keys are missing
+        query_dict = {key: value for key, value in ids_dict.items()
+                      if not pd.isna(value)}
+        if not query_dict:
+            print('There are no values for IDs specified')
             ret = (0, None)
-        # only one record is matched
-        if len(objs) == 1:
-            hp_obj = objs[0]
-            # get number of matched ids
-            ids_matched_no = 0
-            for key, value in ids_dict.items():
-                if value == getattr(hp_obj, key):
-                    ids_matched_no += 1
-            ret = (ids_matched_no, hp_obj.id)
-        # more than one record is matched
-        elif len(objs) > 1:
-            # figure one which ids are making issues
-            matched_ids = dict()
-            for key, value in ids_dict.items():
-                object_ids = list()
-                # check which key is found in which objects
-                for obj in objs:
-                    if value == getattr(obj, key):
-                        object_ids.append(str(obj.id))
-                matched_ids[key] = object_ids
-            msg = (
-                'Keys present for more than one record in hotel_property: {}'
-                .format('; '.join(
-                    ['{} {} present in hotel_property_ids {}'.format(
-                        key,
-                        value,
-                        ', '.join(matched_ids[key]) if matched_ids[key] else None)
-                     for key, value in ids_dict.items()]
-                )))
-            ret = (-1, msg)
         else:
-            ret = (0, None)
-        print('Number of matched IDs: {}, HotelPropertyID/error_message: {}'.format(*ret))
+            objs = (
+                self.hotel_session.query(HotelProperty)
+                    .filter(or_(
+                        *[getattr(HotelProperty, key) == value
+                          for key, value in ids_dict.items()
+                          if not pd.isna(value)]))
+                    .all()
+            )
+            # none of the records are matched
+            if len(objs) == 0:
+                ret = (0, None)
+            # only one record is matched
+            if len(objs) == 1:
+                hp_obj = objs[0]
+                # get number of matched ids
+                ids_matched_no = 0
+                for key, value in ids_dict.items():
+                    if value == getattr(hp_obj, key):
+                        ids_matched_no += 1
+                ret = (ids_matched_no, hp_obj.id)
+            # more than one record is matched
+            elif len(objs) > 1:
+                # figure one which ids are making issues
+                matched_ids = dict()
+                for key, value in ids_dict.items():
+                    object_ids = list()
+                    # check which key is found in which objects
+                    for obj in objs:
+                        if value == getattr(obj, key):
+                            object_ids.append(str(obj.id))
+                    matched_ids[key] = object_ids
+                msg = (
+                    'Keys present for more than one record in hotel_property: '
+                    '{}'.format('; '.join(
+                        ['{} {} present in hotel_property_ids {}'.format(
+                            key,
+                            value,
+                            ', '.join(matched_ids[key])
+                                if matched_ids[key]
+                                else None)
+                         for key, value in ids_dict.items()]
+                    )))
+                ret = (-1, msg)
+            else:
+                ret = (0, None)
+        print('Number of matched IDs: {}, HotelPropertyID/error_message: '
+              '{}'.format(*ret))
         return ret
 
     @staticmethod
