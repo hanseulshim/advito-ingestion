@@ -447,6 +447,23 @@ class Matcher:
         )
         return geo_city if geo_city else None
 
+    def __geo_cities_by_lat_long(self, center_latitude, center_longitude,
+                                 radius_km=80, limit=100):
+        latitude_km_per_degree = 110.57
+        longitude_km_per_degree = 111.32
+        min_latitude = center_latitude - radius_km / latitude_km_per_degree
+        max_latitude = center_latitude + radius_km / latitude_km_per_degree
+        min_longitude = center_longitude - radius_km / longitude_km_per_degree
+        max_longitude = center_longitude + radius_km / longitude_km_per_degree
+        geo_cities = (
+            self.advito_session.query(GeoCity)
+            .filter(GeoCity.latitude.between(min_latitude, max_latitude))
+            .filter(GeoCity.longitude.between(min_longitude, max_longitude))
+            .limit(limit)
+            .all()
+        )
+        return geo_cities
+
     @staticmethod
     def __fuzzy_match(var, choices, limit=50):
         print('\nFuzzy Match: {}'.format(var))
