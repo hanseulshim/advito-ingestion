@@ -2,8 +2,8 @@ import pandas as pd
 from sqlalchemy import func, or_
 
 from db.db import HotelSession, AdvitoSession
-from db.hotel_models import HotelProperty
-from db.advito_models import GeoCountry, GeoState
+from db.hotel_models import HotelProperty, HotelChain
+from db.advito_models import GeoCountry, GeoState, GeoCity
 
 from fuzzywuzzy import fuzz, process
 
@@ -25,6 +25,7 @@ class Matcher:
         print(tmp)
 
     def _match(self, row):
+        if row.name < 3: return
         print('\n# # # # #\nRow: {} Property Name: {}'.format(
             row.name, row['Hotel Name']))
         matched_id = None
@@ -61,14 +62,29 @@ class Matcher:
                 if matched_id is None:
                     matched_id = self.__3rd_condition(
                         hotel_name_matches=hotel_name_matches,
-                        city_name=row['City Name'],
                         country_code=row['Country Code'],
-                        state_code=row['State Code']
+                        state_code=row['State Code'],
+                        city_name=row['City Name'],
+                        address1=row['Address Line 1'],
+                        address2=row['Address Line 2']
                     )
 
                 # 4th condition -> 90% hotel_name, 90% clean_phone
                 if matched_id is None:
                     matched_id = self.__4nd_condition(hotel_name_matches, row['Phone Number'])
+
+                # 4th condition -> 90% hotel_name, 90% clean_phone
+                if matched_id is None:
+                    matched_id = self.__alias_condition(
+                        hotel_name_matches=hotel_name_matches,
+                        country_code=row['Country Code'],
+                        state_code=row['State Code'],
+                        city_name=row['City Name'],
+                        city_latitude=row['City Latitude'],
+                        city_longitude=row['City Longitude'],
+                        brand_code=row['Brand Code']
+                    )
+
                 print(matched_id)
         return matched_id
 
@@ -180,18 +196,23 @@ class Matcher:
                 print('Second Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
-    def __3rd_condition(self, hotel_name_matches, city_name, country_code, state_code):
+    def __3rd_condition(self, hotel_name_matches, country_code, state_code,
+                        city_name, address1, address2):
         """
         3rd condition -> 100% hotel_name, city, state and country code
         :param hotel_name_matches:
-        :param city_name:
         :param country_code:
         :param state_code:
+        :param city_name:
+        :param address1:
+        :param address2:
         :return:
         """
         print('\n3rd Condition')
         matched_id = None
         score_threshold = 100
+        address1_score_threshold = 90
+        address2_score_threshold = 90
         if pd.isna(city_name) or pd.isna(country_code):
             print('City Name and Country Code must be specified')
         else:
@@ -207,25 +228,29 @@ class Matcher:
             if city_name and not pd.isna(city_name):
                 query = query.filter(func.lower(HotelProperty.city) == city_name.lower())
             if country_code and not pd.isna(country_code):
-                geo_country = (
-                    self.advito_session.query(GeoCountry)
-                    .filter(or_(
-                        GeoCountry.country_code_2char == country_code,
-                        GeoCountry.country_code_3char == country_code,
-                        GeoCountry.country_code_numeric == country_code,
-                    ))
-                    .first()
-                )
+                geo_country = self.__geo_country_from_country_code(country_code)
                 if geo_country:
                     query = query.filter(HotelProperty.geo_country_id == geo_country.id)
             if state_code and not pd.isna(state_code):
-                geo_state = (
-                    self.advito_session.query(GeoState)
-                        .filter(GeoState.state_code == state_code)
-                        .first()
-                )
+                geo_state = self.__geo_state_from_state_code(state_code)
                 if geo_state:
                     query = query.filter(HotelProperty.geo_state_id == geo_state.id)
+            if address1 and not pd.isna(address1):
+                choices = self.__fuzzy_match_ids_by_column_matches(
+                    var=address1,
+                    table=HotelProperty,
+                    column='address1',
+                    threshold=address1_score_threshold)
+                if choices:
+                    query = query.filter(HotelProperty.id.in_(choices))
+            if address2 and not pd.isna(address2):
+                choices = self.__fuzzy_match_ids_by_column_matches(
+                    var=address2,
+                    table=HotelProperty,
+                    column='address2',
+                    threshold=address2_score_threshold)
+                if choices:
+                    query = query.filter(HotelProperty.id.in_(choices))
             hp_objs = query.all()
 
             if len(hp_objs) == 1:
@@ -254,17 +279,11 @@ class Matcher:
                 .replace(' ', '')
             )
             # phone number match
-            hp_phone_numbers = pd.read_sql(
-                self.hotel_session.query(HotelProperty.id,
-                                         HotelProperty.phone_primary)
-                    .statement,
-                self.hotel_session.bind).set_index('id')
-            phone_number_matches = self.__fuzzy_match(
-                phone, hp_phone_numbers['phone_primary'].astype(str))
-            # filter phone number match ids based on score_threshold
-            pn_match_ids = set(
-                [hp_id for hp_phone_number, score, hp_id in phone_number_matches
-                 if score >= phone_number_score_threshold])
+            pn_match_ids = self.__fuzzy_match_ids_by_column_matches(
+                var=phone,
+                table=HotelProperty,
+                column='phone_primary',
+                threshold=phone_number_score_threshold)
             # filter hotel name match ids based on score_threshold
             hn_match_ids = set(
                 [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
@@ -276,6 +295,158 @@ class Matcher:
                 print('Fourth Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
+    def __alias_condition(self, hotel_name_matches, country_code, state_code,
+                          city_name, city_latitude, city_longitude, brand_code):
+        """
+        Alias condition -> geo_country_id, geo_state_id, geo_city_id
+        (3 approaches), brand_code, 80% hotel_name
+        :param hotel_name_matches:
+        :param city_name:
+        :param country_code:
+        :param state_code:
+        :param city_latitude:
+        :param city_longitude:
+        :param brand_code:
+        :return:
+        """
+        print('\nAlias Condition')
+        matched_id = None
+        hotel_name_score_threshold = 80
+        city_name_score_threshold = 80
+
+        if pd.isna(city_name) or pd.isna(country_code):
+            print('City Name and Country Code must be specified')
+        else:
+            # start building query to be able to add filters
+            query = (
+                self.hotel_session.query(HotelProperty)
+            )
+
+            # add country_code -> geo_country_id
+            if country_code and not pd.isna(country_code):
+                print('Country code specified, searching for geo_country_id')
+                geo_country = self.__geo_country_from_country_code(country_code)
+                if geo_country:
+                    print('geo_country_id: {}'.format(geo_country.id))
+                    query = query.filter(HotelProperty.geo_country_id == geo_country.id)
+
+            # add state_code -> geo_state_id
+            if state_code and not pd.isna(state_code):
+                print('State code specified, searching for geo_state_id')
+                geo_state = self.__geo_state_from_state_code(state_code)
+                if geo_state:
+                    print('geo_state_id: {}'.format(geo_state.id))
+                    query = query.filter(HotelProperty.geo_state_id == geo_state.id)
+
+            # add city_name -> geo_city_id(s)
+            if city_name and not pd.isna(city_name):
+                print('City name specified, searching for geo_city_id(s)')
+                # match geo_city_id by name
+                geo_city = self.__geo_city_from_city_name(city_name)
+                if geo_city:
+                    print('geo_city_id matched directly by name: {}'
+                          .format(geo_city.id))
+                    query = query.filter(HotelProperty.geo_city_id == geo_city.id)
+                else:
+                    print('Searching geo_city_ids by lat/long in radius 50 miles')
+                    # match geo_city by lat/long (50 miles)
+                    geo_cities = list()
+                    if (city_latitude and not pd.isna(city_latitude)
+                            and city_longitude and not pd.isna(city_longitude)):
+                        geo_cities = self.__geo_cities_by_lat_long(city_latitude, city_longitude)
+                        if geo_cities:
+                            geo_city_ids = [geo_city.id for geo_city in geo_cities]
+                            print('Found {} city/cities: {}'.format(
+                                len(geo_cities), ','.join(geo_city_ids)))
+                            query = query.filter(HotelProperty.geo_city_id.in_(
+                                geo_city_ids))
+                    # fuzzy match if nothing is found in lat/long or lat/long not specified
+                    if not geo_cities:
+                        print('Searching geo_city_ids by fuzzy city name search')
+                        # hotel name match
+                        geo_city_names = pd.read_sql(
+                            self.advito_session.query(GeoCity.id,
+                                                      GeoCity.city_name)
+                                .statement,
+                            self.advito_session.bind).set_index('id')
+                        city_name_matches = self.__fuzzy_match(
+                            city_name, geo_city_names['city_name'])
+                        geo_city_ids = set(
+                            [geo_city_id for geo_city_name, score, geo_city_id in city_name_matches
+                             if score >= city_name_score_threshold])
+                        if geo_city_ids:
+                            print('Found {} city/cities: {}'.format(
+                                len(geo_city_ids), ', '.join([str(x) for x in geo_city_ids])))
+                            query = query.filter(HotelProperty.geo_city_id.in_(geo_city_ids))
+
+            # add brand_code -> hotel_chain_id
+            if brand_code and not pd.isna(brand_code):
+                print('Brand code specified, searching for hotel_chain_ids')
+                # get hotel_chain_id based on brand code
+                hotel_chain = (
+                    self.hotel_session.query(HotelChain)
+                    .filter(or_(
+                        HotelChain.chain_code_sabre == brand_code,
+                        HotelChain.chain_code_amadeus == brand_code,
+                        HotelChain.chain_code_galileo == brand_code,
+                        HotelChain.chain_code_worldspan == brand_code,
+                        HotelChain.chain_code_master == brand_code,
+                    ))
+                    .first()
+                )
+                if hotel_chain:
+                    print('hotel_chain_id found {}'.format(hotel_chain.id))
+                    query = query.filter(HotelProperty.hotel_chain_id == hotel_chain.id)
+
+            # filter hotel name match ids based on score_threshold
+            hn_match_ids = set(
+                [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
+                 if score >= hotel_name_score_threshold])
+            query = query.filter(HotelProperty.id.in_(hn_match_ids))
+
+            # execute query and process results
+            print('Alias query: {}'.format(query.statement))
+            hp_objs = query.all()
+            if len(hp_objs) == 1:
+                matched_id = hp_objs[0].id
+                print('Alias Condition Satisfied, match_id {}'.format(matched_id))
+                # TODO: Create Alias Record
+                # TODO: Matched
+            else:
+                # TODO: Unmatched
+                pass
+        return matched_id
+
+    # TODO: move to geo helpers when moved to hotel-api project
+    def __geo_country_from_country_code(self, country_code):
+        if country_code and not pd.isna(country_code):
+            geo_country = (
+                self.advito_session.query(GeoCountry)
+                .filter(or_(
+                    GeoCountry.country_code_2char == country_code,
+                    GeoCountry.country_code_3char == country_code,
+                    GeoCountry.country_code_numeric == country_code,
+                ))
+                .first()
+            )
+            return geo_country if geo_country else None
+
+    def __geo_state_from_state_code(self, state_code):
+        geo_state = (
+            self.advito_session.query(GeoState)
+            .filter(GeoState.state_code == state_code)
+            .first()
+        )
+        return geo_state if geo_state else None
+
+    def __geo_city_from_city_name(self, city_name):
+        geo_city = (
+            self.advito_session.query(GeoCity)
+            .filter(GeoCity.city_name == city_name)
+            .first()
+        )
+        return geo_city if geo_city else None
+
     @staticmethod
     def __fuzzy_match(var, choices, limit=50):
         print('\nFuzzy Match: {}'.format(var))
@@ -286,8 +457,6 @@ class Matcher:
         ret.extend(ratio)
         for item in ratio:
             print(item)
-
-        print(ret[0])
         if ret[0][1] == 100:
             print('Ratio scored 100%, no need to proceed with other algorithms')
         else:
@@ -302,8 +471,19 @@ class Matcher:
             print('Token Set Ratio')
             for item in token_set_ratio:
                 print(item)
-
         return ret
+
+    def __fuzzy_match_ids_by_column_matches(self, var, table, column, threshold):
+        column_values = pd.read_sql(
+            self.hotel_session.query(getattr(table, 'id'),
+                                     getattr(table, column))
+                .statement,
+            self.hotel_session.bind).set_index('id')
+        column_matches = self.__fuzzy_match(var, column_values[column].astype(str))
+        choices = set(
+            [table_id for column_value, score, table_id in column_matches
+             if score >= threshold])
+        return choices
 
 
 if __name__ == '__main__':
