@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Title } from 'components/common/Typography'
-import { DatePicker } from 'antd'
+import { Alert, DatePicker } from 'antd'
 import FileUpload from './FileUpload'
 import SelectPractice from './SelectPractice'
 import SelectClient from './SelectClient'
@@ -35,16 +35,25 @@ const DateSelect = styled.div`
 	}
 `
 
+const Message = styled(Alert)`
+	margin-top: 25px;
+`
+
+const MessageHeading = styled.div`
+	font-weight: 400;
+`
+
 const Form = () => {
-	const initialState = {
+	const [inputs, setInputs] = useState({
 		client: null,
 		application: null,
 		template: null,
 		source: null,
 		fileStartDate: null,
 		fileEndDate: null
-	}
-	const [inputs, setInputs] = useState(initialState)
+	})
+	const [successMessage, setSuccessMessage] = useState('')
+	const [errorMessage, setErrorMessage] = useState('')
 
 	const handleInputChange = (key, value) => {
 		if (key === 'client') {
@@ -69,11 +78,23 @@ const Form = () => {
 				[key]: value,
 				source: null
 			}))
-		} else
+		} else {
 			setInputs(inputs => ({
 				...inputs,
 				[key]: value
 			}))
+			if (value === 0) {
+				setErrorMessage(
+					<>
+						<MessageHeading>Not seeing what you need?</MessageHeading>
+						<div>Contact I&amp;A to add your source selection.</div>
+					</>
+				)
+			} else {
+				setErrorMessage('')
+			}
+			setSuccessMessage('')
+		}
 	}
 
 	const handleDateChange = (date, dateString) => {
@@ -123,7 +144,14 @@ const Form = () => {
 			<FileUpload
 				disabled={Object.values(inputs).some(v => v === null || v === 0)}
 				inputs={inputs}
+				setSuccessMessage={setSuccessMessage}
+				setErrorMessage={setErrorMessage}
+				MessageHeading={MessageHeading}
 			/>
+			{successMessage && (
+				<Message message={successMessage} type="success" showIcon />
+			)}
+			{errorMessage && <Message message={errorMessage} type="error" showIcon />}
 		</Container>
 	)
 }

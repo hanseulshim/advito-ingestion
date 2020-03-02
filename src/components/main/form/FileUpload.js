@@ -24,13 +24,6 @@ const UploadButton = styled.button`
 		color: ${props => props.theme.white};
 	}
 `
-const ErrorMessage = styled.div`
-	color: ${props => props.theme.deepBlush};
-`
-
-const SuccessMessage = styled.div`
-	color: ${props => props.theme.easternWind};
-`
 
 const toBase64 = file =>
 	new Promise((resolve, reject) => {
@@ -40,21 +33,19 @@ const toBase64 = file =>
 		reader.onerror = error => reject(error)
 	})
 
-const FileUpload = ({ inputs, disabled }) => {
+const FileUpload = ({
+	inputs,
+	disabled,
+	setSuccessMessage,
+	setErrorMessage,
+	MessageHeading
+}) => {
 	const [fileList, setFile] = useState([])
-	const [errorMessage, setErrorMessage] = useState('')
-	const [successMessage, setSuccessMessage] = useState('')
 	const [uploadFile] = useMutation(UPLOAD_FILE)
 
 	useEffect(() => {
 		if (inputs.source === 0) {
-			setErrorMessage(
-				'Not seeing what you need? Contact I&A to add your source selection.'
-			)
 			setFile([])
-			setTimeout(() => {
-				setErrorMessage('')
-			}, 5000)
 		}
 	}, [inputs.source])
 
@@ -66,7 +57,9 @@ const FileUpload = ({ inputs, disabled }) => {
 
 	const handleFileUpload = async () => {
 		try {
+			if (!fileList.length) return
 			const file = fileList[0].originFileObj
+			const fileSize = file.size
 			const base64 = await toBase64(file)
 			await uploadFile({
 				variables: {
@@ -75,19 +68,19 @@ const FileUpload = ({ inputs, disabled }) => {
 					dataStartDate: inputs.fileStartDate,
 					dataEndDate: inputs.fileEndDate,
 					fileName: file.name,
+					rowCount: 0, //TODO: REPLACE THIS WITH ACTUAL ROW COUNT FROM JOHNNY BOY
+					fileSize,
 					base64
 				}
 			})
-			setSuccessMessage('File uploaded successfully.')
-			setTimeout(() => {
-				setFile([])
-				setSuccessMessage('')
-			}, 1500)
+			setSuccessMessage(
+				<MessageHeading>
+					Your file {file.name} has been successfully uploaded!
+				</MessageHeading>
+			)
+			setErrorMessage('')
 		} catch (e) {
 			setErrorMessage(e.message)
-			setTimeout(() => {
-				setErrorMessage('')
-			}, 1500)
 		}
 	}
 
@@ -121,12 +114,8 @@ const FileUpload = ({ inputs, disabled }) => {
 						Click or drag file to this area to upload
 					</p>
 				</Dragger>
-				<ErrorMessage>{errorMessage}</ErrorMessage>
-				<SuccessMessage>{successMessage}</SuccessMessage>
 			</Container>
-			<div style={{ maxWidth: '900px' }}>
-				<UploadButton onClick={() => handleFileUpload()}>Upload</UploadButton>
-			</div>
+			<UploadButton onClick={() => handleFileUpload()}>Upload</UploadButton>
 		</>
 	)
 }
