@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Upload, Icon, message } from 'antd'
+import { Upload, Icon, message, Modal } from 'antd'
 import { useMutation } from '@apollo/client'
 import { UPLOAD_FILE } from 'api/mutations'
+import UploadConfirmation from './UploadConfirmation'
 const { Dragger } = Upload
 
 const Container = styled.div`
@@ -44,12 +45,17 @@ const FileUpload = ({ inputs, disabled }) => {
   const [file, setFile] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [modal, setModal] = useState(false)
   const [uploadFile] = useMutation(UPLOAD_FILE)
 
   const dummyRequest = ({ file, onSuccess }) => {
     setTimeout(() => {
       onSuccess('ok')
     }, 0)
+  }
+
+  const toggleModal = () => {
+    setModal(!modal)
   }
 
   const handleFileUpload = async () => {
@@ -106,8 +112,15 @@ const FileUpload = ({ inputs, disabled }) => {
         <ErrorMessage>{errorMessage}</ErrorMessage>
         <SuccessMessage>{successMessage}</SuccessMessage>
       </Container>
+      <UploadConfirmation
+        visible={modal}
+        file={file}
+        onCancel={() => toggleModal()}
+        onOk={() => toggleModal()}
+        selectedClient={inputs.client}
+      />
       <div style={{ maxWidth: '900px' }}>
-        <UploadButton onClick={() => handleFileUpload()}>Upload</UploadButton>
+        <UploadButton onClick={() => toggleModal()}>Upload</UploadButton>
       </div>
     </>
   )
