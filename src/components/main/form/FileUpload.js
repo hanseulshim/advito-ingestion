@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Upload, Icon } from 'antd'
 import { useMutation } from '@apollo/client'
@@ -45,6 +45,18 @@ const FileUpload = ({ inputs, disabled }) => {
 	const [errorMessage, setErrorMessage] = useState('')
 	const [successMessage, setSuccessMessage] = useState('')
 	const [uploadFile] = useMutation(UPLOAD_FILE)
+
+	useEffect(() => {
+		if (inputs.source === 0) {
+			setErrorMessage(
+				'Not seeing what you need? Contact I&A to add your source selection.'
+			)
+			setFile([])
+			setTimeout(() => {
+				setErrorMessage('')
+			}, 5000)
+		}
+	}, [inputs.source])
 
 	const dummyRequest = ({ onSuccess }) => {
 		setTimeout(() => {
