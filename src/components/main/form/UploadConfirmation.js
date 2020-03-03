@@ -6,15 +6,15 @@ import { Modal } from 'antd'
 import { CLIENT_LIST } from 'api/queries'
 import XLSX from 'xlsx'
 
-const UploadConfirmation = ({ visible, file, ...props }) => {
+const UploadConfirmation = ({ visible, file, onOk, ...props }) => {
   const { loading, error, data } = useQuery(CLIENT_LIST)
-  const [rowCount, setRowCount] = useState([])
+  const [rowsArray, setRowsArray] = useState([])
 
   useEffect(() => {
     async function getFileData() {
       if (file) {
         const data = await parseExcel(file)
-        setRowCount(data)
+        setRowsArray(data)
       }
     }
     getFileData()
@@ -51,13 +51,15 @@ const UploadConfirmation = ({ visible, file, ...props }) => {
     <Modal
       title="Confirm File Upload"
       visible={visible}
-      okButtonProps={{ disabled: !file }}
+      okButtonProps={{ disabled: !file, type: 'primary' }}
+      cancelButtonProps={{ type: 'default' }}
+      onOk={() => onOk(rowsArray.length)}
       {...props}
     >
       {file ? (
         <p>
           You are about to upload <b>{file.name}</b> with{' '}
-          <b>{rowCount.length}</b> rows for client{' '}
+          <b>{rowsArray.length}</b> rows for client{' '}
           {getClientName(props.selectedClient)}. Do you wish to continue?
         </p>
       ) : (

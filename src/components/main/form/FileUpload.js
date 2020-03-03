@@ -58,7 +58,7 @@ const FileUpload = ({ inputs, disabled }) => {
     setModal(!modal)
   }
 
-  const handleFileUpload = async () => {
+  const handleFileUpload = async rowCount => {
     try {
       const base64 = await toBase64(file)
       await uploadFile({
@@ -71,11 +71,13 @@ const FileUpload = ({ inputs, disabled }) => {
           base64
         }
       })
+      toggleModal()
       setSuccessMessage('File uploaded successfully.')
       setTimeout(() => {
         setSuccessMessage('')
       }, 5000)
     } catch (e) {
+      toggleModal()
       setErrorMessage(e.message)
       setTimeout(() => {
         setErrorMessage('')
@@ -116,7 +118,7 @@ const FileUpload = ({ inputs, disabled }) => {
         visible={modal}
         file={file}
         onCancel={() => toggleModal()}
-        onOk={() => toggleModal()}
+        onOk={handleFileUpload}
         selectedClient={inputs.client}
       />
       <div style={{ maxWidth: '900px' }}>
