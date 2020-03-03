@@ -6,6 +6,8 @@ extend type Mutation {
     dataStartDate: Date!
     dataEndDate: Date!
     fileName: String!
+    rowCount: Int!
+    fileSize: Int!
     base64: String!
   ): Boolean!
 }

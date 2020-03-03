@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Upload, Icon, message, Modal } from 'antd'
+import { Upload, Icon } from 'antd'
 import { useMutation } from '@apollo/client'
 import { UPLOAD_FILE } from 'api/mutations'
 import UploadConfirmation from './UploadConfirmation'
@@ -25,13 +25,6 @@ const UploadButton = styled.button`
     color: ${props => props.theme.white};
   }
 `
-const ErrorMessage = styled.div`
-  color: ${props => props.theme.deepBlush};
-`
-
-const SuccessMessage = styled.div`
-  color: ${props => props.theme.easternWind};
-`
 
 const toBase64 = file =>
   new Promise((resolve, reject) => {
@@ -41,16 +34,26 @@ const toBase64 = file =>
     reader.onerror = error => reject(error)
   })
 
-const FileUpload = ({ inputs, disabled }) => {
-  const [file, setFile] = useState(null)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
-  const [modal, setModal] = useState(false)
+const FileUpload = ({
+  inputs,
+  disabled,
+  setSuccessMessage,
+  setErrorMessage,
+  MessageHeading
+}) => {
+  const [fileList, setFile] = useState([])
   const [uploadFile] = useMutation(UPLOAD_FILE)
+  const [modal, setModal] = useState(false)
 
-  const dummyRequest = ({ file, onSuccess }) => {
+  useEffect(() => {
+    if (inputs.source === 0) {
+      setFile([])
+    }
+  }, [inputs.source])
+
+  const dummyRequest = ({ onSuccess }) => {
     setTimeout(() => {
-      onSuccess('ok')
+      onSuccess(null)
     }, 0)
   }
 
@@ -60,6 +63,9 @@ const FileUpload = ({ inputs, disabled }) => {
 
   const handleFileUpload = async rowCount => {
     try {
+      if (!fileList.length) return
+      const file = fileList[0].originFileObj
+      const fileSize = file.size
       const base64 = await toBase64(file)
       await uploadFile({
         variables: {
@@ -68,29 +74,30 @@ const FileUpload = ({ inputs, disabled }) => {
           dataStartDate: inputs.fileStartDate,
           dataEndDate: inputs.fileEndDate,
           fileName: file.name,
+          rowCount,
+          fileSize,
           base64
         }
       })
       toggleModal()
-      setSuccessMessage('File uploaded successfully.')
-      setTimeout(() => {
-        setSuccessMessage('')
-      }, 5000)
+      setSuccessMessage(
+        <MessageHeading>
+          Your file {file.name} has been successfully uploaded!
+        </MessageHeading>
+      )
+      setErrorMessage('')
     } catch (e) {
       toggleModal()
       setErrorMessage(e.message)
-      setTimeout(() => {
-        setErrorMessage('')
-      }, 5000)
     }
   }
 
   const onFileChange = async info => {
-    const { status } = info.file
-    if (status === 'done') {
-      setFile(info.file.originFileObj)
-    } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`)
+    if (info.file.status === 'removed') {
+      setFile([])
+    } else {
+      info.file.status = 'done'
+      setFile([info.file])
     }
   }
 
@@ -102,7 +109,11 @@ const FileUpload = ({ inputs, disabled }) => {
           disabled={disabled}
           multiple={false}
           customRequest={dummyRequest}
+          showUploadList={{
+            showDownloadIcon: false
+          }}
           onChange={onFileChange}
+          fileList={fileList}
         >
           <p className="ant-upload-drag-icon">
             <Icon type="inbox" />
@@ -111,12 +122,10 @@ const FileUpload = ({ inputs, disabled }) => {
             Click or drag file to this area to upload
           </p>
         </Dragger>
-        <ErrorMessage>{errorMessage}</ErrorMessage>
-        <SuccessMessage>{successMessage}</SuccessMessage>
       </Container>
       <UploadConfirmation
         visible={modal}
-        file={file}
+        file={fileList.length > 0 ? fileList[0].originFileObj : null}
         onCancel={() => toggleModal()}
         onOk={handleFileUpload}
         selectedClient={inputs.client}
