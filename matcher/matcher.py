@@ -25,7 +25,7 @@ class Matcher:
         print(tmp)
 
     def _match(self, row):
-        if row.name >= 10: return
+        # if row.name > 30: return
         print('\n# # # # #\nRow: {} Property Name: {}'.format(
             row.name, row['Hotel Name']))
         matched_id = None
@@ -322,7 +322,7 @@ class Matcher:
 
         # start building query to be able to add filters
         query = (
-            self.hotel_session.query(HotelProperty)
+            self.hotel_session.query(HotelPropertyAlias)
             .filter(HotelPropertyAlias.alias_property_name == property_name)
         )
 
