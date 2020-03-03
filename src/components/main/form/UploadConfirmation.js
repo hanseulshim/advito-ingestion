@@ -11,13 +11,13 @@ const UploadConfirmation = ({ visible, file, onOk, ...props }) => {
   const [rowsArray, setRowsArray] = useState([])
 
   useEffect(() => {
-    async function getFileData() {
+    const setParsedFile = async () => {
       if (file) {
         const data = await parseExcel(file)
         setRowsArray(data)
       }
     }
-    getFileData()
+    setParsedFile()
   }, [file])
 
   const getClientName = clientId => {
