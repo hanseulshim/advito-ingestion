@@ -2,7 +2,7 @@ import pandas as pd
 from sqlalchemy import func, or_
 
 from db.db import HotelSession, AdvitoSession
-from db.hotel_models import HotelProperty, HotelChain
+from db.hotel_models import HotelProperty, HotelChain, HotelPropertyAlias
 from db.advito_models import GeoCountry, GeoState, GeoCity
 
 from fuzzywuzzy import fuzz, process
@@ -20,12 +20,12 @@ class Matcher:
     def match(self, ingest_job_id, file_path, sheet_name=None):
         self.hotel_session = HotelSession()
         df = pd.read_excel(
-            file_path, nrows=8, sheet_name=sheet_name, dtype=str)
+            file_path, nrows=100, sheet_name=sheet_name, dtype=str)
         tmp = df.apply(lambda row: self._match(row), axis=1)
         print(tmp)
 
     def _match(self, row):
-        if row.name < 3: return
+        if row.name >= 10: return
         print('\n# # # # #\nRow: {} Property Name: {}'.format(
             row.name, row['Hotel Name']))
         matched_id = None
@@ -73,15 +73,26 @@ class Matcher:
                 if matched_id is None:
                     matched_id = self.__4nd_condition(hotel_name_matches, row['Phone Number'])
 
-                # 4th condition -> 90% hotel_name, 90% clean_phone
+                # 5th condition -> Alias exists
+                if matched_id is None:
+                    matched_id = self.__alias_exists(
+                        property_name=row['Hotel Name'],
+                        country_code=row['Country Code'],
+                        state_code=row['State Code'],
+                        city_name=row['City Name'],
+                        address1=row['Address Line 1'])
+
+                # 6th condition -> Alias search
                 if matched_id is None:
                     matched_id = self.__alias_condition(
                         hotel_name_matches=hotel_name_matches,
+                        hotel_name=row['Hotel Name'],
                         country_code=row['Country Code'],
                         state_code=row['State Code'],
                         city_name=row['City Name'],
                         city_latitude=row['City Latitude'],
                         city_longitude=row['City Longitude'],
+                        address1=row['Address Line 1'],
                         brand_code=row['Brand Code']
                     )
 
@@ -196,8 +207,8 @@ class Matcher:
                 print('Second Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
-    def __3rd_condition(self, hotel_name_matches, country_code, state_code,
-                        city_name, address1, address2):
+    def __3rd_condition(self, hotel_name_matches, address1, country_code,
+                        state_code, city_name, address2):
         """
         3rd condition -> 100% hotel_name, city, state and country code
         :param hotel_name_matches:
@@ -295,17 +306,65 @@ class Matcher:
                 print('Fourth Condition Satisfied, match_id {}'.format(matched_id))
         return matched_id
 
-    def __alias_condition(self, hotel_name_matches, country_code, state_code,
-                          city_name, city_latitude, city_longitude, brand_code):
+    def __alias_exists(self, property_name, country_code, state_code,
+                       city_name, address1):
+        """
+        Check if alias exists
+        :param property_name:
+        :param country_code:
+        :param state_code:
+        :param city_name:
+        :param address1:
+        :return:
+        """
+        print('\nAlias Exists?')
+        matched_id = None
+
+        # start building query to be able to add filters
+        query = (
+            self.hotel_session.query(HotelProperty)
+            .filter(HotelPropertyAlias.alias_property_name == property_name)
+        )
+
+        # add country_code
+        if country_code and not pd.isna(country_code):
+            query = query.filter(HotelPropertyAlias.alias_country_label == country_code)
+
+        # add state_code
+        if state_code and not pd.isna(state_code):
+            query = query.filter(HotelPropertyAlias.alias_state_label == state_code)
+
+        # add city_name -> geo_city_id(s)
+        if city_name and not pd.isna(city_name):
+            query = query.filter(HotelPropertyAlias.alias_city_label == city_name)
+
+        # add address1
+        if address1 and not pd.isna(address1):
+            query = query.filter(HotelPropertyAlias.alias_address1 == address1)
+
+        # execute query and process results
+        print('Alias Exists query: {}'.format(query.statement))
+        hpa_objs = query.all()
+        if len(hpa_objs) == 1:
+            matched_id = hpa_objs[0].hotel_property_id
+            print('Alias found')
+        else:
+            print('Alias not found')
+        return matched_id
+
+    def __alias_condition(self, hotel_name_matches, hotel_name, country_code, state_code,
+                          city_name, city_latitude, city_longitude, address1, brand_code):
         """
         Alias condition -> geo_country_id, geo_state_id, geo_city_id
         (3 approaches), brand_code, 80% hotel_name
         :param hotel_name_matches:
+        :param hotel_name:
         :param city_name:
         :param country_code:
         :param state_code:
         :param city_latitude:
         :param city_longitude:
+        :param address1:
         :param brand_code:
         :return:
         """
@@ -353,11 +412,14 @@ class Matcher:
                     geo_cities = list()
                     if (city_latitude and not pd.isna(city_latitude)
                             and city_longitude and not pd.isna(city_longitude)):
-                        geo_cities = self.__geo_cities_by_lat_long(city_latitude, city_longitude)
+                        geo_cities = self.__geo_cities_by_lat_long(
+                            float(city_latitude), float(city_longitude))
                         if geo_cities:
                             geo_city_ids = [geo_city.id for geo_city in geo_cities]
                             print('Found {} city/cities: {}'.format(
-                                len(geo_cities), ','.join(geo_city_ids)))
+                                len(geo_cities),
+                                ', '.join([str(geo_city_id)
+                                           for geo_city_id in geo_city_ids])))
                             query = query.filter(HotelProperty.geo_city_id.in_(
                                 geo_city_ids))
                     # fuzzy match if nothing is found in lat/long or lat/long not specified
@@ -410,14 +472,27 @@ class Matcher:
             if len(hp_objs) == 1:
                 matched_id = hp_objs[0].id
                 print('Alias Condition Satisfied, match_id {}'.format(matched_id))
-                # TODO: Create Alias Record
-                # TODO: Matched
+                dt_now = datetime.now()
+                hpa_obj = HotelPropertyAlias(
+                    hotel_property_id=matched_id,
+                    alias_type='automated',
+                    alias_user_id=None,
+                    alias_property_name=hotel_name,
+                    alias_country_label=country_code,
+                    alias_state_label=state_code,
+                    alias_city_label=city_name,
+                    alias_address1=address1,
+                    alias_note=None,
+                    created=dt_now,
+                    modified=dt_now
+                )
+                self.hotel_session.add(hpa_obj)
+                self.hotel_session.commit()
             else:
                 # TODO: Unmatched
                 pass
         return matched_id
 
-    # TODO: move to geo helpers when moved to hotel-api project
     def __geo_country_from_country_code(self, country_code):
         if country_code and not pd.isna(country_code):
             geo_country = (
@@ -504,6 +579,15 @@ class Matcher:
 
 
 if __name__ == '__main__':
+    from datetime import datetime
+    start = datetime.now()
+    print(start)
     Matcher().match(ingest_job_id='123456789',
                     file_path='MatchingTest.xlsx',
                     sheet_name='Transaction Template')
+    stop = datetime.now()
+    print(stop)
+
+    print(start, stop)
+    print(stop - start)
+

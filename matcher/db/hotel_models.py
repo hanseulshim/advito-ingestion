@@ -785,3 +785,22 @@ class SmartselectRuleType(Base):
     base_action = Column(String(16), nullable=False)
     created = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
     modified = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+
+
+class HotelPropertyAlias(Base):
+    __tablename__ = 'hotel_property_alias'
+
+    id = Column(BigInteger, primary_key=True)
+    hotel_property_id = Column(ForeignKey('hotel_property.id'), nullable=False)
+    alias_type = Column(String(16), nullable=False)
+    alias_user_id = Column(BigInteger)
+    alias_property_name = Column(String(255), nullable=False, index=True)
+    alias_address1 = Column(String(255), nullable=False, index=True)
+    alias_city_label = Column(String(255), nullable=False, index=True)
+    alias_state_label = Column(String(8))
+    alias_country_label = Column(String(255), nullable=False, index=True)
+    alias_note = Column(Text)
+    created = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+    modified = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+
+    hotel_property = relationship('HotelProperty')
