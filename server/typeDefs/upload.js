@@ -1,4 +1,18 @@
 export default `
+type Job {
+  id: Int
+  originalFileName: String
+  jobName: String
+  countRows: Int
+  isComplete: Boolean
+  jobStatus: String
+  jobNote: String
+}
+
+extend type Query {
+  getJob(jobId: Int!): Job
+}
+
 extend type Mutation {
   uploadFile(
     clientId: Int!
@@ -9,6 +23,6 @@ extend type Mutation {
     rowCount: Int!
     fileSize: Int!
     base64: String!
-  ): Boolean!
+  ): Int
 }
 `

@@ -7,6 +7,9 @@ const s3 = new AWS.S3({
 })
 
 export default {
+	Query: {
+		getJob: async (_, { jobId }) => JobIngestion.query().findById(83)
+	},
 	Mutation: {
 		uploadFile: async (
 			_,
@@ -38,6 +41,7 @@ export default {
 					dataEndDate,
 					originalFileName: fileName,
 					countRows: rowCount,
+					fileExtension: 'xlsx',
 					fileSize
 				})
 				const params = {
@@ -47,7 +51,7 @@ export default {
 					ContentEncoding: 'base64'
 				}
 				await s3.upload(params).promise()
-				return true
+				return job.id
 			} catch (err) {
 				console.log(err)
 				throw err

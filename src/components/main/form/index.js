@@ -7,6 +7,7 @@ import SelectPractice from './SelectPractice'
 import SelectClient from './SelectClient'
 import SelectTemplate from './SelectTemplate'
 import SelectSource from './SelectSource'
+import JobProgress from './JobProgress'
 const { RangePicker } = DatePicker
 
 const Container = styled.div`
@@ -45,13 +46,14 @@ const MessageHeading = styled.div`
 
 const Form = () => {
 	const [inputs, setInputs] = useState({
-		client: null,
-		application: null,
-		template: null,
-		source: null,
-		fileStartDate: null,
-		fileEndDate: null
+		client: 348,
+		application: 16,
+		template: 4,
+		source: 16,
+		fileStartDate: '2020-03-03',
+		fileEndDate: '2020-03-03'
 	})
+	const [jobId, setJobId] = useState(null)
 	const [successMessage, setSuccessMessage] = useState('')
 	const [errorMessage, setErrorMessage] = useState('')
 
@@ -144,10 +146,10 @@ const Form = () => {
 			<FileUpload
 				disabled={Object.values(inputs).some(v => v === null || v === 0)}
 				inputs={inputs}
-				setSuccessMessage={setSuccessMessage}
 				setErrorMessage={setErrorMessage}
-				MessageHeading={MessageHeading}
+				setJobId={setJobId}
 			/>
+			{jobId && <JobProgress jobId={jobId} />}
 			{successMessage && (
 				<Message message={successMessage} type="success" showIcon />
 			)}
