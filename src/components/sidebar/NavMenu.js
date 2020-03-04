@@ -1,12 +1,13 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Popover } from 'antd'
-import Icon from 'components/common/Icon'
 import './NavMenu.css'
 import { LOGOUT } from 'api'
 import { useMutation } from '@apollo/client'
 import { SpinLoader } from 'components/common/Loader'
 import { removeUser, getUser } from 'helper'
+import { SettingFilled } from '@ant-design/icons'
+import colors from 'styles/variables'
 
 const LogOut = styled.span`
 	color: ${props => props.theme.white};
@@ -14,15 +15,6 @@ const LogOut = styled.span`
 	:hover {
 		color: ${props => props.theme.white};
 		text-decoration: underline;
-	}
-`
-
-const PersonIcon = styled(Icon)`
-	font-size: 1.5em;
-	color: ${props => props.theme.treePoppy};
-	cursor: pointer;
-	:hover {
-		color: ${props => props.theme.tradewind};
 	}
 `
 
@@ -41,7 +33,7 @@ const NavMenu = () => {
 			trigger="click"
 			placement="bottom"
 		>
-			<PersonIcon icon="cog" />
+			<SettingFilled style={{ fontSize: '1.5em', color: colors.treePoppy }} />
 		</Popover>
 	)
 }
