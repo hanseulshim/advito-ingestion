@@ -8,7 +8,7 @@ const s3 = new AWS.S3({
 
 export default {
 	Query: {
-		getJob: async (_, { jobId }) => JobIngestion.query().findById(83)
+		getJob: async (_, { jobId }) => JobIngestion.query().findById(jobId)
 	},
 	Mutation: {
 		uploadFile: async (
@@ -42,7 +42,10 @@ export default {
 					originalFileName: fileName,
 					countRows: rowCount,
 					fileExtension: 'xlsx',
-					fileSize
+					fileSize,
+					isComplete: false,
+					jobStatus: 'running',
+					jobNote: 0
 				})
 				const params = {
 					Bucket: S3,

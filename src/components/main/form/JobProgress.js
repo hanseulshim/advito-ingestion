@@ -12,17 +12,44 @@ const Container = styled.div`
 	align-items: center;
 `
 
-const JobProgress = ({ jobId, setSuccess, setError }) => {
-	const { loading, error, data } = useQuery(GET_JOB, {
+const JobProgress = ({
+	setJobId,
+	jobId,
+	setSuccessMessage,
+	setError,
+	MessageHeading
+}) => {
+	const { loading, error, data, stopPolling } = useQuery(GET_JOB, {
 		variables: { jobId },
 		skip: !jobId,
 		pollInterval: 5000,
 		fetchPolicy: 'network-only'
 	})
-	console.log(jobId)
 	if (loading) return <SpinLoader />
 	if (error) return <ErrorMessage error={error} />
-	const { isComplete, jobStatus, jobNote } = data.getJob
+	const {
+		originalFileName,
+		jobName,
+		countRows,
+		jobStatus,
+		isComplete,
+		jobNote
+	} = data.getJob
+	if (isComplete) {
+		stopPolling()
+		if (jobStatus === 'done') {
+			//send success
+			setSuccessMessage(
+				<MessageHeading>
+					Your {originalFileName} has been succesfully uploaded! <br /> It
+					contained {countRows} and has the job name {jobName}
+				</MessageHeading>
+			)
+		} else if (jobStatus === 'error') {
+			//send error
+		}
+		setJobId(null)
+	}
 	return (
 		<Container>
 			{jobStatus === 'running' && (

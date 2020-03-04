@@ -46,14 +46,14 @@ const MessageHeading = styled.div`
 
 const Form = () => {
 	const [inputs, setInputs] = useState({
-		client: 348,
+		client: 348, //TODO: CLEAR THESE OUT
 		application: 16,
 		template: 4,
 		source: 16,
 		fileStartDate: '2020-03-03',
 		fileEndDate: '2020-03-03'
 	})
-	const [jobId, setJobId] = useState(null)
+	const [jobId, setJobId] = useState(83) //TODO: CLEAR THESE OUT
 	const [successMessage, setSuccessMessage] = useState('')
 	const [errorMessage, setErrorMessage] = useState('')
 
@@ -149,7 +149,15 @@ const Form = () => {
 				setErrorMessage={setErrorMessage}
 				setJobId={setJobId}
 			/>
-			{jobId && <JobProgress jobId={jobId} />}
+			{jobId && (
+				<JobProgress
+					setJobId={setJobId}
+					jobId={jobId}
+					setSuccessMessage={setSuccessMessage}
+					setError={setErrorMessage}
+					MessageHeading={MessageHeading}
+				/>
+			)}
 			{successMessage && (
 				<Message message={successMessage} type="success" showIcon />
 			)}
