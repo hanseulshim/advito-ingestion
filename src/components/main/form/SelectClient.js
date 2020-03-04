@@ -20,7 +20,7 @@ const SelectClient = ({ label, onChange }) => {
 				onChange={onChange}
 				showSearch
 				filterOption={(input, option) =>
-					option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+					option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
 				}
 			>
 				{data.clientList.map((client, i) => {

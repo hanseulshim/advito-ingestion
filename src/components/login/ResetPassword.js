@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Form, Icon, Input, Button } from 'antd'
 import { useHistory, useLocation } from 'react-router'
@@ -79,7 +78,6 @@ const RestPassword = ({ form }) => {
 		})
 	}
 
-	const { getFieldDecorator } = form
 	return (
 		<Container>
 			<Logo src={advitoLogo} />
@@ -134,11 +132,5 @@ const RestPassword = ({ form }) => {
 		</Container>
 	)
 }
-
-// const RestPasswordForm = Form.create({ name: 'restPassword' })(RestPassword)
-
-// RestPassword.propTypes = {
-//   form: PropTypes.object.isRequired
-// }
 
 export default RestPassword
