@@ -49,7 +49,7 @@
 		"deploy:prod": "REACT_APP_STAGE=prod react-app-rewired build && aws s3 sync  ./build s3://advito-ingestion/ --acl public-read --profile advito",
 		"deploy:prod:server": "cd ./server && yarn prod",
 		"deploy:prod:all": "yarn deploy:prod & yarn deploy:prod:server",
-		"deploy:staging:front": "yarn deploy:alpha && yarn deploy:beta && yarn deploy:dev && yarn deploy:prod",
+		"deploy:staging:front": "yarn deploy:alpha && yarn deploy:beta && yarn deploy:dev",
 		"deploy:staging:server": "yarn deploy:alpha:server && yarn deploy:beta:server && yarn deploy:dev:server",
 		"deploy:staging": "yarn deploy:alpha:all && yarn deploy:beta:all && yarn deploy:dev:all",
 		"deploy:all:front": "yarn deploy:alpha && yarn deploy:beta && yarn deploy:dev && yarn deploy:prod",
