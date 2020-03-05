@@ -72,13 +72,7 @@ const getSectionHeader = (key, count) => {
 	}
 }
 
-const JobProgress = ({
-	setJobId,
-	jobId,
-	setSuccessMessage,
-	setErrorMessage,
-	MessageHeading
-}) => {
+const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 	const { loading, error, data, stopPolling } = useQuery(GET_JOB, {
 		variables: { jobId },
 		skip: !jobId,
@@ -99,12 +93,15 @@ const JobProgress = ({
 		stopPolling()
 		if (jobStatus === 'done') {
 			//send success
-			setSuccessMessage(
-				<MessageHeading>
-					Your {originalFileName} has been succesfully uploaded! <br /> It
-					contained {countRows} and has the job name {jobName}
-				</MessageHeading>
-			)
+			setMessage({
+				message: (
+					<MessageHeading>
+						Your {originalFileName} has been succesfully uploaded! <br /> It
+						contained {countRows} rows and has the job name {jobName}
+					</MessageHeading>
+				),
+				type: 'success'
+			})
 		} else if (jobStatus === 'error') {
 			const json = JSON.parse(jobNote)
 			const errorCount = Object.values(json).reduce(
@@ -134,24 +131,27 @@ const JobProgress = ({
 					)
 				}
 			}
-			setErrorMessage(
-				<>
-					<ErrorCount>{errorCount} Errors found</ErrorCount>
-					<MessageHeading>
-						Your file will not be ingested due the follow errors:
-					</MessageHeading>
-					{displayArray}
-					<br />
-					<MessageHeading>
-						Please resolve the errors and try uploading again.
-					</MessageHeading>
-					<div>
-						Tried everything and still getting errors?{' '}
-						<a href={'mailto:AdvitoServices@bcdtravel.eu'}>Contact I&amp;A</a>{' '}
-						within 5 days of upload for assistance.
-					</div>
-				</>
-			)
+			setMessage({
+				message: (
+					<>
+						<ErrorCount>{errorCount} Errors found</ErrorCount>
+						<MessageHeading>
+							Your file will not be ingested due the follow errors:
+						</MessageHeading>
+						{displayArray}
+						<br />
+						<MessageHeading>
+							Please resolve the errors and try uploading again.
+						</MessageHeading>
+						<div>
+							Tried everything and still getting errors?{' '}
+							<a href={'mailto:AdvitoServices@bcdtravel.eu'}>Contact I&amp;A</a>{' '}
+							within 5 days of upload for assistance.
+						</div>
+					</>
+				),
+				type: 'error'
+			})
 		}
 		setJobId(null)
 	}

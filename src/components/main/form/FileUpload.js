@@ -27,11 +27,13 @@ const toBase64 = file =>
 		reader.onerror = error => reject(error)
 	})
 
-const FileUpload = ({ inputs, disabled, setErrorMessage, setJobId }) => {
+const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 	const [fileList, setFile] = useState([])
 	const [uploadFile] = useMutation(UPLOAD_FILE, {
 		onCompleted: ({ uploadFile }) => {
 			setJobId(uploadFile)
+			setFile([])
+			setMessage({})
 		}
 	})
 	const [modal, setModal] = useState(false)
@@ -71,10 +73,9 @@ const FileUpload = ({ inputs, disabled, setErrorMessage, setJobId }) => {
 				}
 			})
 			toggleModal()
-			setErrorMessage('')
 		} catch (e) {
 			toggleModal()
-			setErrorMessage(e.message)
+			setMessage({ message: e.message, type: 'error' })
 		}
 	}
 

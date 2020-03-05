@@ -47,6 +47,12 @@ const MessageHeading = styled.div`
 
 const Form = () => {
 	const [inputs, setInputs] = useState({
+		// application: 1,
+		// client: 348,
+		// fileEndDate: '2020-03-11',
+		// fileStartDate: '2020-03-11',
+		// source: 16,
+		// template: 4
 		client: null,
 		application: null,
 		template: null,
@@ -54,9 +60,9 @@ const Form = () => {
 		fileStartDate: null,
 		fileEndDate: null
 	})
+	// const [jobId, setJobId] = useState(83)
 	const [jobId, setJobId] = useState(null)
-	const [successMessage, setSuccessMessage] = useState('')
-	const [errorMessage, setErrorMessage] = useState('')
+	const [message, setMessage] = useState({})
 
 	const handleInputChange = (key, value) => {
 		if (key === 'client') {
@@ -67,7 +73,7 @@ const Form = () => {
 				template: null,
 				source: null
 			}))
-			setErrorMessage('')
+			setMessage({})
 		} else if (key === 'application') {
 			setInputs(inputs => ({
 				...inputs,
@@ -75,33 +81,38 @@ const Form = () => {
 				template: null,
 				source: null
 			}))
-			setErrorMessage('')
+			setMessage({})
 		} else if (key === 'template') {
 			setInputs(inputs => ({
 				...inputs,
 				[key]: value,
 				source: null
 			}))
-			setErrorMessage('')
+			setMessage({})
 		} else {
 			setInputs(inputs => ({
 				...inputs,
 				[key]: value
 			}))
 			if (value === 0) {
-				setErrorMessage(
-					<>
-						<MessageHeading>Not seeing what you need?</MessageHeading>
-						<div>
-							<a href={'mailto:AdvitoServices@bcdtravel.eu'}>Contact I&amp;A</a>{' '}
-							to add your source selection.
-						</div>
-					</>
-				)
+				setMessage({
+					message: (
+						<>
+							<MessageHeading>Not seeing what you need?</MessageHeading>
+							<div>
+								<a href={'mailto:AdvitoServices@bcdtravel.eu'}>
+									Contact I&amp;A
+								</a>{' '}
+								to add your source selection.
+							</div>
+						</>
+					),
+					type: 'error'
+				})
 			} else {
-				setErrorMessage('')
+				setMessage({})
 			}
-			setSuccessMessage('')
+			setMessage({})
 		}
 	}
 
@@ -152,22 +163,20 @@ const Form = () => {
 			<FileUpload
 				disabled={Object.values(inputs).some(v => v === null || v === 0)}
 				inputs={inputs}
-				setErrorMessage={setErrorMessage}
+				setMessage={setMessage}
 				setJobId={setJobId}
 			/>
 			{jobId && (
 				<JobProgress
 					setJobId={setJobId}
 					jobId={jobId}
-					setSuccessMessage={setSuccessMessage}
-					setErrorMessage={setErrorMessage}
+					setMessage={setMessage}
 					MessageHeading={MessageHeading}
 				/>
 			)}
-			{successMessage && (
-				<Message message={successMessage} type="success" showIcon />
+			{message.message && (
+				<Message message={message.message} type={message.type} showIcon />
 			)}
-			{errorMessage && <Message message={errorMessage} type="error" showIcon />}
 		</Container>
 	)
 }
