@@ -25,7 +25,7 @@ class Matcher:
         print(tmp)
 
     def _match(self, row):
-        # if row.name > 30: return
+        if row.name >= 50: return
         print('\n# # # # #\nRow: {} Property Name: {}'.format(
             row.name, row['Hotel Name']))
         matched_id = None
@@ -224,8 +224,8 @@ class Matcher:
         score_threshold = 100
         address1_score_threshold = 90
         address2_score_threshold = 90
-        if pd.isna(city_name) or pd.isna(country_code):
-            print('City Name and Country Code must be specified')
+        if pd.isna(city_name) or pd.isna(country_code) or pd.isna(address1):
+            print('City Name and Country Code and Address1 must be specified')
         else:
             # filter hotel name match ids based on score_threshold
             hn_match_ids = set(
@@ -237,16 +237,20 @@ class Matcher:
                 .filter(HotelProperty.id.in_(hn_match_ids))
             )
             if city_name and not pd.isna(city_name):
+                print('Add City Name to query')
                 query = query.filter(func.lower(HotelProperty.city) == city_name.lower())
             if country_code and not pd.isna(country_code):
                 geo_country = self.__geo_country_from_country_code(country_code)
                 if geo_country:
+                    print('Add Geo Country Id to query')
                     query = query.filter(HotelProperty.geo_country_id == geo_country.id)
             if state_code and not pd.isna(state_code):
                 geo_state = self.__geo_state_from_state_code(state_code)
                 if geo_state:
+                    print('Add Geo State Id to query')
                     query = query.filter(HotelProperty.geo_state_id == geo_state.id)
             if address1 and not pd.isna(address1):
+                print('Add Address1 to query')
                 choices = self.__fuzzy_match_ids_by_column_matches(
                     var=address1,
                     table=HotelProperty,
@@ -255,6 +259,7 @@ class Matcher:
                 if choices:
                     query = query.filter(HotelProperty.id.in_(choices))
             if address2 and not pd.isna(address2):
+                print('Add Address2 to query')
                 choices = self.__fuzzy_match_ids_by_column_matches(
                     var=address2,
                     table=HotelProperty,
@@ -441,30 +446,30 @@ class Matcher:
                                 len(geo_city_ids), ', '.join([str(x) for x in geo_city_ids])))
                             query = query.filter(HotelProperty.geo_city_id.in_(geo_city_ids))
 
-            # add brand_code -> hotel_chain_id
-            if brand_code and not pd.isna(brand_code):
-                print('Brand code specified, searching for hotel_chain_ids')
-                # get hotel_chain_id based on brand code
-                hotel_chain = (
-                    self.hotel_session.query(HotelChain)
-                    .filter(or_(
-                        HotelChain.chain_code_sabre == brand_code,
-                        HotelChain.chain_code_amadeus == brand_code,
-                        HotelChain.chain_code_galileo == brand_code,
-                        HotelChain.chain_code_worldspan == brand_code,
-                        HotelChain.chain_code_master == brand_code,
-                    ))
-                    .first()
-                )
-                if hotel_chain:
-                    print('hotel_chain_id found {}'.format(hotel_chain.id))
-                    query = query.filter(HotelProperty.hotel_chain_id == hotel_chain.id)
-
-            # filter hotel name match ids based on score_threshold
-            hn_match_ids = set(
-                [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
-                 if score >= hotel_name_score_threshold])
-            query = query.filter(HotelProperty.id.in_(hn_match_ids))
+            # # add brand_code -> hotel_chain_id
+            # if brand_code and not pd.isna(brand_code):
+            #     print('Brand code specified, searching for hotel_chain_ids')
+            #     # get hotel_chain_id based on brand code
+            #     hotel_chain = (
+            #         self.hotel_session.query(HotelChain)
+            #         .filter(or_(
+            #             HotelChain.chain_code_sabre == brand_code,
+            #             HotelChain.chain_code_amadeus == brand_code,
+            #             HotelChain.chain_code_galileo == brand_code,
+            #             HotelChain.chain_code_worldspan == brand_code,
+            #             HotelChain.chain_code_master == brand_code,
+            #         ))
+            #         .first()
+            #     )
+            #     if hotel_chain:
+            #         print('hotel_chain_id found {}'.format(hotel_chain.id))
+            #         query = query.filter(HotelProperty.hotel_chain_id == hotel_chain.id)
+            #
+            # # filter hotel name match ids based on score_threshold
+            # hn_match_ids = set(
+            #     [hp_id for hp_hotel_name, score, hp_id in hotel_name_matches
+            #      if score >= hotel_name_score_threshold])
+            # query = query.filter(HotelProperty.id.in_(hn_match_ids))
 
             # execute query and process results
             print('Alias query: {}'.format(query.statement))
@@ -472,22 +477,22 @@ class Matcher:
             if len(hp_objs) == 1:
                 matched_id = hp_objs[0].id
                 print('Alias Condition Satisfied, match_id {}'.format(matched_id))
-                dt_now = datetime.now()
-                hpa_obj = HotelPropertyAlias(
-                    hotel_property_id=matched_id,
-                    alias_type='automated',
-                    alias_user_id=None,
-                    alias_property_name=hotel_name,
-                    alias_country_label=country_code,
-                    alias_state_label=state_code,
-                    alias_city_label=city_name,
-                    alias_address1=address1,
-                    alias_note=None,
-                    created=dt_now,
-                    modified=dt_now
-                )
-                self.hotel_session.add(hpa_obj)
-                self.hotel_session.commit()
+                # dt_now = datetime.now()
+                # hpa_obj = HotelPropertyAlias(
+                #     hotel_property_id=matched_id,
+                #     alias_type='automated',
+                #     alias_user_id=0,
+                #     alias_property_name=hotel_name,
+                #     alias_country_label=country_code,
+                #     alias_state_label=state_code,
+                #     alias_city_label=city_name,
+                #     alias_address1=address1,
+                #     alias_note='',
+                #     created=dt_now,
+                #     modified=dt_now
+                # )
+                # self.hotel_session.add(hpa_obj)
+                # self.hotel_session.commit()
             else:
                 # TODO: Unmatched
                 pass
