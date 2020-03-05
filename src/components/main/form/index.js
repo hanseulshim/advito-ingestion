@@ -88,7 +88,6 @@ const Form = () => {
 				...inputs,
 				[key]: value
 			}))
-			debugger
 			if (value === 0) {
 				setErrorMessage(
 					<>
