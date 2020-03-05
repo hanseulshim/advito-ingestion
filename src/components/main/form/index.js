@@ -7,6 +7,7 @@ import SelectPractice from './SelectPractice'
 import SelectClient from './SelectClient'
 import SelectTemplate from './SelectTemplate'
 import SelectSource from './SelectSource'
+import JobProgress from './JobProgress'
 const { RangePicker } = DatePicker
 
 const Container = styled.div`
@@ -41,6 +42,7 @@ const Message = styled(Alert)`
 
 const MessageHeading = styled.div`
 	font-weight: 400;
+	font-size: 1.25em;
 `
 
 const Form = () => {
@@ -52,6 +54,7 @@ const Form = () => {
 		fileStartDate: null,
 		fileEndDate: null
 	})
+	const [jobId, setJobId] = useState(null)
 	const [successMessage, setSuccessMessage] = useState('')
 	const [errorMessage, setErrorMessage] = useState('')
 
@@ -64,30 +67,36 @@ const Form = () => {
 				template: null,
 				source: null
 			}))
-		}
-		if (key === 'application') {
+			setErrorMessage('')
+		} else if (key === 'application') {
 			setInputs(inputs => ({
 				...inputs,
 				[key]: value,
 				template: null,
 				source: null
 			}))
+			setErrorMessage('')
 		} else if (key === 'template') {
 			setInputs(inputs => ({
 				...inputs,
 				[key]: value,
 				source: null
 			}))
+			setErrorMessage('')
 		} else {
 			setInputs(inputs => ({
 				...inputs,
 				[key]: value
 			}))
+			debugger
 			if (value === 0) {
 				setErrorMessage(
 					<>
 						<MessageHeading>Not seeing what you need?</MessageHeading>
-						<div>Contact I&amp;A to add your source selection.</div>
+						<div>
+							<a href={'mailto:AdvitoServices@bcdtravel.eu'}>Contact I&amp;A</a>{' '}
+							to add your source selection.
+						</div>
 					</>
 				)
 			} else {
@@ -115,19 +124,19 @@ const Form = () => {
 				/>
 				<SelectPractice
 					label="Practice Area"
-					variables={{ clientId: inputs.client || null }}
+					variables={{ clientId: inputs.client }}
 					onChange={e => handleInputChange('application', e)}
 				/>
 			</Row>
 			<Row>
 				<SelectTemplate
 					label="Template"
-					variables={{ applicationId: inputs.application || null }}
+					variables={{ applicationId: inputs.application }}
 					onChange={e => handleInputChange('template', e)}
 				/>
 				<SelectSource
 					label="Source"
-					variables={{ templateId: inputs.template || null }}
+					variables={{ templateId: inputs.template }}
 					onChange={e => handleInputChange('source', e)}
 				/>
 			</Row>
@@ -144,10 +153,18 @@ const Form = () => {
 			<FileUpload
 				disabled={Object.values(inputs).some(v => v === null || v === 0)}
 				inputs={inputs}
-				setSuccessMessage={setSuccessMessage}
 				setErrorMessage={setErrorMessage}
-				MessageHeading={MessageHeading}
+				setJobId={setJobId}
 			/>
+			{jobId && (
+				<JobProgress
+					setJobId={setJobId}
+					jobId={jobId}
+					setSuccessMessage={setSuccessMessage}
+					setErrorMessage={setErrorMessage}
+					MessageHeading={MessageHeading}
+				/>
+			)}
 			{successMessage && (
 				<Message message={successMessage} type="success" showIcon />
 			)}
