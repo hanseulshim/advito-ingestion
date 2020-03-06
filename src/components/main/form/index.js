@@ -7,7 +7,8 @@ import SelectPractice from './SelectPractice'
 import SelectClient from './SelectClient'
 import SelectTemplate from './SelectTemplate'
 import SelectSource from './SelectSource'
-import JobProgress from './JobProgress'
+// import JobProgress from './JobProgress'
+import JobProgress1 from './JobProgress1'
 const { RangePicker } = DatePicker
 
 const Container = styled.div`
@@ -166,8 +167,16 @@ const Form = () => {
 				setMessage={setMessage}
 				setJobId={setJobId}
 			/>
-			{jobId && (
+			{/* {jobId && (
 				<JobProgress
+					setJobId={setJobId}
+					jobId={jobId}
+					setMessage={setMessage}
+					MessageHeading={MessageHeading}
+				/>
+			)} */}
+			{jobId && (
+				<JobProgress1
 					setJobId={setJobId}
 					jobId={jobId}
 					setMessage={setMessage}

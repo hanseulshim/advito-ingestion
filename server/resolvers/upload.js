@@ -8,7 +8,10 @@ const s3 = new AWS.S3({
 
 export default {
 	Query: {
-		getJob: async (_, { jobId }) => JobIngestion.query().findById(jobId)
+		getJob: async (_, { jobId }) => {
+			const job = await JobIngestion.query().findById(jobId)
+			return { ...job, timestamp: new Date().getTime() }
+		}
 	},
 	Mutation: {
 		uploadFile: async (

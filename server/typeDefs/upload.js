@@ -7,6 +7,7 @@ type Job {
   isComplete: Boolean
   jobStatus: String
   jobNote: String
+  timestamp: String
 }
 
 extend type Query {

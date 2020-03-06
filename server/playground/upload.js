@@ -13,6 +13,7 @@ export default {
         isComplete
         jobStatus
         jobNote
+        timestamp
       }
     }`
 	}
