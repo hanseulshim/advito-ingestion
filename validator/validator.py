@@ -158,7 +158,7 @@ class Validator:
         def is_allowed(x):
             import re
             print(x)
-            pattern = re.compile(r"""^[\w\s\\,.:;?`&$()/|\-_'"]+$""")
+            pattern = re.compile(r"""^[a-zA-Z0-9 \s\\,.:;!?`&$()/|\-_'"]+$""")
             match_obj = pattern.match(x)
             print(match_obj)
             return True if match_obj else False
@@ -173,7 +173,7 @@ class Validator:
             not_allowed = s[s == False]
             if not not_allowed.empty:
                 for index in not_allowed.index.to_list():
-                    err_msg_list.append('Column {} Row {}'.format(column, index))
+                    err_msg_list.append('Column {}, Row {}'.format(column, index))
 
         if err_msg_list:
             err_msg = 'Incorrect characters found:<br/>{}'.format(
