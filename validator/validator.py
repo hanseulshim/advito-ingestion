@@ -158,7 +158,7 @@ class Validator:
         def is_allowed(x):
             import re
             print(x)
-            pattern = re.compile(r"""^[a-zA-Z0-9 \s\\,.:;!?`&$()/|\-_'"]+$""")
+            pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?`&$()/|\-_'"]+$""")
             match_obj = pattern.match(x)
             print(match_obj)
             return True if match_obj else False
