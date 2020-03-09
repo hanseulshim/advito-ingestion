@@ -406,11 +406,12 @@ class Matcher:
             if city_name and not pd.isna(city_name):
                 print('City name specified, searching for geo_city_id(s)')
                 # match geo_city_id by name
-                geo_city = self.__geo_city_from_city_name(city_name)
-                if geo_city:
-                    print('geo_city_id matched directly by name: {}'
-                          .format(geo_city.id))
-                    query = query.filter(HotelProperty.geo_city_id == geo_city.id)
+                geo_cities_by_name = self.__geo_cities_from_city_name(city_name)
+                if geo_cities_by_name:
+                    geo_city_ids_by_name = [geo_city.id for geo_city in geo_cities_by_name]
+                    print('geo_city_ids matched directly by name: {}'
+                          .format(geo_city_ids_by_name))
+                    query = query.filter(HotelProperty.geo_city_id.in_(geo_city_ids_by_name))
                 else:
                     print('Searching geo_city_ids by lat/long in radius 50 miles')
                     # match geo_city by lat/long (50 miles)
@@ -519,11 +520,11 @@ class Matcher:
         )
         return geo_state if geo_state else None
 
-    def __geo_city_from_city_name(self, city_name):
+    def __geo_cities_from_city_name(self, city_name):
         geo_city = (
             self.advito_session.query(GeoCity)
             .filter(GeoCity.city_name == city_name)
-            .first()
+            .all()
         )
         return geo_city if geo_city else None
 
