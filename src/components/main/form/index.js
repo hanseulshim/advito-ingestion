@@ -95,7 +95,6 @@ const Form = () => {
 				...inputs,
 				[key]: value
 			}))
-			console.log(value)
 			if (value === 0) {
 				setMessage({
 					message: (
