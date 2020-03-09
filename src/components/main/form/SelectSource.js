@@ -9,7 +9,7 @@ import { SOURCE_LIST } from 'api/queries'
 
 const { Option } = Select
 
-const SelectSource = ({ variables = null, label, onChange }) => {
+const SelectSource = ({ variables = null, label, onChange, application }) => {
 	const { loading, error, data } = useQuery(SOURCE_LIST, {
 		variables,
 		fetchPolicy: 'network-only'
@@ -27,7 +27,7 @@ const SelectSource = ({ variables = null, label, onChange }) => {
 						</Option>
 					)
 				})}
-				{data.sourceList.length && (
+				{data.sourceList.length && application !== 1 && (
 					<Option key={'unlisted'} value={0}>
 						Source not listed
 					</Option>

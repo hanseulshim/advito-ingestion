@@ -95,6 +95,7 @@ const Form = () => {
 				...inputs,
 				[key]: value
 			}))
+			console.log(value)
 			if (value === 0) {
 				setMessage({
 					message: (
@@ -113,7 +114,6 @@ const Form = () => {
 			} else {
 				setMessage({})
 			}
-			setMessage({})
 		}
 	}
 
@@ -148,6 +148,7 @@ const Form = () => {
 				<SelectSource
 					label="Source"
 					variables={{ templateId: inputs.template }}
+					application={inputs.application}
 					onChange={e => handleInputChange('source', e)}
 				/>
 			</Row>
