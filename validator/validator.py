@@ -10,8 +10,8 @@ class Validator:
     validators = [
         # 'unmasked_credit_card_data_validation',
         # 'source_currency_code_validation',
-        'incorrect_characters_validation',
-        # 'incorrect_dates_validation',
+        # 'incorrect_characters_validation',
+        'incorrect_dates_validation',
     ]
 
     def __init__(self):
@@ -88,14 +88,23 @@ class Validator:
 
         err_msg_list = list()
         for column in columns:
+            # empty dates
+            s = df[column].isna()
+            s = s[s == True]
+            if not s.empty:
+                err_msg_list.append('{}: {}'.format(
+                    column,
+                    ', '.join([str(index + 2) for index in s.index.tolist()])))
+
+            # bad date format
             s = df[column].dropna().apply(self._string_to_date)
             s = s[s == False]
             if not s.empty:
                 err_msg_list.append('{}: {}'.format(
                     column,
-                    ', '.join([str(index) for index in s.index.tolist()])))
+                    ', '.join([str(index + 2) for index in s.index.tolist()])))
         if err_msg_list:
-            err_msg = 'Dates with bad format found:<br/>{}'.format(
+            err_msg = 'Dates with bad format or missing data found:<br/>{}'.format(
                 '<br/>'.join(err_msg_list))
             ret = (False, err_msg)
         else:
@@ -173,7 +182,7 @@ class Validator:
             not_allowed = s[s == False]
             if not not_allowed.empty:
                 for index in not_allowed.index.to_list():
-                    err_msg_list.append('Column {}, Row {}'.format(column, index))
+                    err_msg_list.append('Column {}, Row {}'.format(column, index + 2))
 
         if err_msg_list:
             err_msg = 'Incorrect characters found:<br/>{}'.format(
@@ -184,7 +193,8 @@ class Validator:
         return ret
 
     @staticmethod
-    def _string_to_date(date_string, date_format='%Y-%b-%d %H:%M:%S'):
+    def _string_to_date(date_string, date_format='%Y-%m-%d %H:%M:%S'):
+        print(date_string)
         try:
             ret = datetime.strptime(date_string, date_format)
         except ValueError:
@@ -200,13 +210,14 @@ class Validator:
                 'Transaction Currency']
 
     def _get_date_columns(self):
-        columns = (
-            self.advito_session.query(AdvitoApplicationTemplateColumn.column_name)
-            .filter(AdvitoApplicationTemplateColumn.data_type == 'date')
-            .distinct()
-            .all()
-        )
-        return [column[0] for column in columns]
+        # columns = (
+        #     self.advito_session.query(AdvitoApplicationTemplateColumn.column_name)
+        #     .filter(AdvitoApplicationTemplateColumn.data_type == 'date')
+        #     .distinct()
+        #     .all()
+        # )
+        # return [column[0] for column in columns]
+        return ['Invoice Date', 'Check-In Date', 'Check-Out Date']
 
     def _get_currency_codes(self):
         currency_codes = (
@@ -217,5 +228,8 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(ingest_job_id='123456789', file_path='ValidationTest.xlsx')
+    # Validator().validate(ingest_job_id='123456789', file_path='ValidationTest.xlsx')
     # Validator().validate(ingest_job_id='123456789', file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/ValidationTest.xlsx')
+    # Validator().validate(ingest_job_id='123456789', file_path='AgencyHotel_CharacterTest.xlsx')
+    Validator().validate(ingest_job_id='123456789', file_path='AgencyHotel_DateTest.xlsx')
+
