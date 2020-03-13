@@ -50,7 +50,8 @@ export default {
 				.leftJoin('advitoUserRoleLink as ur', 'ur.advitoRoleId', 'ar.id')
 				.leftJoin('advitoUser as u', 'u.id', 'ur.advitoUserId')
 				.where('u.id', user.id)
-				.andWhere('a.isActive', true),
+				.andWhere('a.isActive', true)
+				.orderBy(['a.application_name', 't.templateName']),
 		sourceList: async (_, { templateId }) =>
 			AdvitoApplicationTemplateSource.query().where(
 				'advitoApplicationTemplateId',
