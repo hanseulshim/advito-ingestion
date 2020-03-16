@@ -9,7 +9,22 @@ const s3 = new AWS.S3({
 export default {
 	Query: {
 		getJob: async (_, { jobId }) => {
-			const job = await JobIngestion.query().findById(jobId)
+			const job = await JobIngestion.query()
+				.select('j.*', 't.templateName', 'a.applicationName')
+				.findById(jobId)
+				.alias('j')
+				.leftJoin(
+					'advitoApplicationTemplateSource as s',
+					'j.advitoApplicationTemplateSourceId',
+					's.id'
+				)
+				.leftJoin(
+					'advitoApplicationTemplate as t',
+					's.advitoApplicationTemplateId',
+					't.id'
+				)
+				.leftJoin('advitoApplication as a', 't.advitoApplicationId', 'a.id')
+			console.log(job)
 			return { ...job, timestamp: new Date().getTime() }
 		}
 	},
@@ -48,6 +63,7 @@ export default {
 					fileSize,
 					isComplete: false,
 					jobStatus: 'running',
+					processingStartTimestamp: new Date(),
 					jobNote: 0
 				})
 				const params = {

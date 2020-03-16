@@ -11,6 +11,9 @@ export const GET_JOB = gql`
 			jobStatus
 			jobNote
 			timestamp
+			processingStartTimestamp
+			templateName
+			applicationName
 		}
 	}
 `

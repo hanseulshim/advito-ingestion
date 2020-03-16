@@ -7,6 +7,9 @@ type Job {
   isComplete: Boolean
   jobStatus: String
   jobNote: String
+  processingStartTimestamp: String
+  templateName: String
+  applicationName: String
   timestamp: String
 }
 

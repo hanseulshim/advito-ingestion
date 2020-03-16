@@ -14,6 +14,9 @@ export default {
         jobStatus
         jobNote
         timestamp
+        processingStartTimestamp
+        templateName
+        applicationName
       }
     }`
 	}
