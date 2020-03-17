@@ -26,7 +26,7 @@ provider:
 functions:
   validation:
     timeout: 900
-    handler: endpoints.api_get
+    handler: endpoints.validation
     events:
       - http:
           path: /validation

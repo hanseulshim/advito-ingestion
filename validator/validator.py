@@ -69,6 +69,8 @@ class Validator:
             self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
+            validation_passed = False
+        return validation_passed
 
     @staticmethod
     def incorrect_characters_validation(data):

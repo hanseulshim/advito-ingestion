@@ -2,8 +2,7 @@
 import json
 
 
-
-def validate(event, context):
+def validation(event, context):
     """
     /api/{controller}/{method}/{c}/{d}
     /api/{controller}/{method}/{c}
@@ -12,10 +11,14 @@ def validate(event, context):
     :return:
     """
     from validator import Validator
-    res, msg = Validator().validate(
-        ingest_job_id='123456789',
-        file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/ValidationTest.xlsx')
-
+    args = event.get('body')
+    job_ingestion_id = args.get('job_ingestion_id')
+    file_path = args.get('file_path')
+    validation_passed = False
+    if job_ingestion_id and file_path:
+        validation_passed = Validator().validate(
+            job_ingestion_id=job_ingestion_id,
+            file_path=file_path)
     return {
         'statusCode': 200,
         'headers': {
@@ -26,11 +29,6 @@ def validate(event, context):
         },
         'body': json.dumps(
             {
-                'success': res,
-                'message': msg
+                'success': validation_passed,
             })
     }
-
-
-if __name__ == '__main__':
-    print(validation({}, {}))
