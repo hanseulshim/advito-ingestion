@@ -25,12 +25,12 @@ provider:
 
 functions:
   validation:
-    timeout: 30
+    timeout: 900
     handler: endpoints.api_get
     events:
       - http:
           path: /validation
-          method: get
+          method: post
           cors:
             headers:
               - Content-Type

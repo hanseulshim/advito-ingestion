@@ -1284,6 +1284,36 @@ class Job(Base):
     client = relationship('Client')
 
 
+class JobIngestion(Base):
+    __tablename__ = 'job_ingestion'
+
+    id = Column(BigInteger, primary_key=True)
+    advito_user_id = Column(ForeignKey('advito_user.id'), nullable=False)
+    client_id = Column(ForeignKey('client.id'), nullable=False)
+    advito_application_template_source_id = Column(ForeignKey('advito_application_template_source.id'), nullable=False)
+    data_start_date = Column(Date, nullable=False)
+    data_end_date = Column(Date, nullable=False)
+    upload_timestamp = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+    original_file_name = Column(String(128), nullable=False)
+    job_name = Column(Text)
+    processing_start_timestamp = Column(TIMESTAMP(precision=6))
+    processing_end_timestamp = Column(TIMESTAMP(precision=6))
+    processing_dur_sec = Column(Integer)
+    count_rows = Column(Integer)
+    file_size = Column(Integer)
+    file_extension = Column(String(16))
+    is_complete = Column(Boolean)
+    job_status = Column(String(32))
+    job_note = Column(Text)
+    created = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+    modified = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+
+    advito_application_template_source = relationship('AdvitoApplicationTemplateSource')
+    advito_user = relationship('AdvitoUser')
+    client = relationship('Client')
+
+
+
 class AdvitoUserSessionLog(Base):
     __tablename__ = 'advito_user_session_log'
 

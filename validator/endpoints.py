@@ -2,7 +2,8 @@
 import json
 
 
-def api_get(event, context):
+
+def validate(event, context):
     """
     /api/{controller}/{method}/{c}/{d}
     /api/{controller}/{method}/{c}
@@ -11,7 +12,7 @@ def api_get(event, context):
     :return:
     """
     from validator import Validator
-    res, msg = Validator.validate(
+    res, msg = Validator().validate(
         ingest_job_id='123456789',
         file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/ValidationTest.xlsx')
 
@@ -32,4 +33,4 @@ def api_get(event, context):
 
 
 if __name__ == '__main__':
-    print(api_get({}, {}))
+    print(validation({}, {}))
