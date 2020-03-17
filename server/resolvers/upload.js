@@ -24,7 +24,6 @@ export default {
 					't.id'
 				)
 				.leftJoin('advitoApplication as a', 't.advitoApplicationId', 'a.id')
-			console.log(job)
 			return { ...job, timestamp: new Date().getTime() }
 		}
 	},
