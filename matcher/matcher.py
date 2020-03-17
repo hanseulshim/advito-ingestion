@@ -373,7 +373,7 @@ class Matcher:
         :param brand_code:
         :return:
         """
-        print('\nAlias Condition')
+        print('\n6th condition')
         matched_id = None
         hotel_name_score_threshold = 80
         city_name_score_threshold = 80
@@ -388,7 +388,8 @@ class Matcher:
 
             # add country_code -> geo_country_id
             if country_code and not pd.isna(country_code):
-                print('Country code specified, searching for geo_country_id')
+                print('Country code specified {}, searching for geo_country_id'
+                      .format(country_code))
                 geo_country = self.__geo_country_from_country_code(country_code)
                 if geo_country:
                     print('geo_country_id: {}'.format(geo_country.id))
@@ -396,7 +397,8 @@ class Matcher:
 
             # add state_code -> geo_state_id
             if state_code and not pd.isna(state_code):
-                print('State code specified, searching for geo_state_id')
+                print('State code specified {}, searching for geo_state_id'
+                      .format(state_code))
                 geo_state = self.__geo_state_from_state_code(state_code)
                 if geo_state:
                     print('geo_state_id: {}'.format(geo_state.id))
@@ -404,7 +406,8 @@ class Matcher:
 
             # add city_name -> geo_city_id(s)
             if city_name and not pd.isna(city_name):
-                print('City name specified, searching for geo_city_id(s)')
+                print('City name specified {}, searching for geo_city_id(s)'
+                      .format(city_name))
                 # match geo_city_id by name
                 geo_cities_by_name = self.__geo_cities_from_city_name(city_name)
                 if geo_cities_by_name:
