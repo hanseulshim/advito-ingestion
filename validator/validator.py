@@ -1,3 +1,4 @@
+import traceback
 import pandas as pd
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
@@ -69,6 +70,12 @@ class Validator:
             self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
+            validation_passed = False
+        # general exception
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+
             validation_passed = False
         return validation_passed
 

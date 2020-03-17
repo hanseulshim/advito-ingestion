@@ -12,6 +12,7 @@ def validation(event, context):
     """
     from validator import Validator
     args = event.get('body')
+    args = json.loads(args) if type(args) != dict else args
     job_ingestion_id = args.get('job_ingestion_id')
     file_path = args.get('file_path')
     validation_passed = False
