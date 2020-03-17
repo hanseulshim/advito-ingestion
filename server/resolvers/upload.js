@@ -1,5 +1,6 @@
 import AWS from 'aws-sdk'
 import { JobIngestion } from '../models'
+import axios from 'axios'
 const { ACCESS_KEY_ID, SECRET_ACCESS_KEY, S3, S3_KEY } = process.env
 const s3 = new AWS.S3({
 	accessKeyId: ACCESS_KEY_ID,
@@ -24,7 +25,6 @@ export default {
 					't.id'
 				)
 				.leftJoin('advitoApplication as a', 't.advitoApplicationId', 'a.id')
-			console.log(job)
 			return { ...job, timestamp: new Date().getTime() }
 		}
 	},
@@ -72,7 +72,16 @@ export default {
 					Body: base64Data,
 					ContentEncoding: 'base64'
 				}
-				await s3.upload(params).promise()
+				const s3Response = await s3.upload(params).promise()
+
+				await axios.post(
+					'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation',
+					{
+						job_ingestion_id: job.id,
+						file_path: s3Response.Location
+					}
+				)
+
 				return job.id
 			} catch (err) {
 				console.log(err)
