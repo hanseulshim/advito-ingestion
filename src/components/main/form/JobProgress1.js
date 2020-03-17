@@ -5,6 +5,7 @@ import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
 import { Progress } from 'antd'
 import { GET_JOB } from 'api/queries'
+import moment from 'moment'
 
 const Container = styled.div`
   display: flex;
@@ -118,6 +119,7 @@ const JobProgress1 = ({ setJobId, jobId, setMessage, MessageHeading }) => {
         type: 'success'
       })
     } else {
+      //Display error message in UI
       const json = JSON.parse(errorJson)
       const errorCount = Object.values(json).reduce(
         (prev, curr) => prev + curr.length,
@@ -146,6 +148,57 @@ const JobProgress1 = ({ setJobId, jobId, setMessage, MessageHeading }) => {
           )
         }
       }
+      //Display error message in email
+      const emailArray = []
+      for (let [key, value] of Object.entries(json)) {
+        const count = value.length
+        const formatKey = (key, count) => {
+          if (key === 'unmaskedCreditCardData') {
+            return `Unmasked credit card data (${count} errors)`
+          }
+          if (key === 'sourceCurrencyCode') {
+            return `No source currency code (${count} errors)`
+          }
+          if (key === 'incorrectCharacters') {
+            return `Non-English or unallowed character used (${count} errors)`
+          }
+          if (key === 'incorrectDates') {
+            return `Incorrect date format (${count} errors)`
+          }
+        }
+        const formattedKey = formatKey(key, count)
+
+        if (count > 0) {
+          emailArray.push(
+            ` %0D%0A ${formattedKey} : ${[
+              value.map(v => v.replace(',', ' ')).join(', ')
+            ]}` + `%0D%0A`
+          )
+        }
+      }
+
+      const getMailTo = () => {
+        const user = JSON.parse(localStorage.getItem('advito-ingestion-user'))
+          .displayName
+
+        return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request
+		  &body=Please provide a detailed description of your need so that we can provide prompt assisstance.%0D%0A
+		  %0D%0A
+		  Username: ${user}
+		  %0D%0A
+		  Filename: ${originalFileName}
+		  %0D%0A
+		  Practice Area Selection: ${applicationName}
+		  %0D%0A
+		  Template: ${templateName}
+		  %0D%0A
+		  Date/time of ingestion attempt: ${new Date(+processingStartTimestamp)}
+		  %0D%0A
+		  Error generated: %0D%0A
+			${emailArray.join('')}
+		  `
+      }
+
       setMessage({
         message: (
           <>
@@ -160,8 +213,8 @@ const JobProgress1 = ({ setJobId, jobId, setMessage, MessageHeading }) => {
             </MessageHeading>
             <div>
               Tried everything and still getting errors?{' '}
-              <a href={'mailto:AdvitoServices@bcdtravel.eu'}>Contact I&amp;A</a>{' '}
-              within 5 days of upload for assistance.
+              <a href={getMailTo()}>Contact I&amp;A</a> within 5 days of upload
+              for assistance.
             </div>
           </>
         ),
