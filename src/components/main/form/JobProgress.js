@@ -76,7 +76,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
   const { loading, error, data, stopPolling } = useQuery(GET_JOB, {
     variables: { jobId },
     skip: !jobId,
-    pollInterval: 5000,
+    pollInterval: 3000,
     fetchPolicy: 'network-only'
   })
   if (loading) return <SpinLoader />
