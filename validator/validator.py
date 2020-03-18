@@ -31,7 +31,6 @@ class Validator:
         self.advito_session.close()
 
     def validate(self, job_ingestion_id, file_path):
-        # TODO: get ingestion job
         try:
             job = (
                 self.advito_session.query(JobIngestion)
@@ -106,7 +105,7 @@ class Validator:
             s = s[s == False]
             if not s.empty:
                 err_list.extend(
-                    ('Row {}'.format(str(index + 2)), 'Column {}'.format(column))
+                    'Row {}, Column {}'.format(str(index + 2), column)
                     for index in s.index.tolist())
         return (False, err_list) if err_list else (True, '')
 
@@ -146,7 +145,7 @@ class Validator:
             s = s[s == False]
             if not s.empty:
                 err_list.extend(
-                    ('Row {}'.format(str(index + 2)), 'Column {}'.format(column))
+                    'Row {}, Column {}'.format(str(index + 2), column)
                     for index in s.index.tolist())
         return (False, err_list) if err_list else (True, None)
 
@@ -172,7 +171,7 @@ class Validator:
             empty_rows = empty_rows[empty_rows == True]
             if not empty_rows.empty:
                 err_list.extend(
-                    ('Row {}'.format(str(index + 2)), 'Column {}'.format(column))
+                    'Row {}, Column {}'.format(str(index + 2), column)
                     for index in empty_rows.index.tolist())
 
             # bad currencies
@@ -181,7 +180,7 @@ class Validator:
             s = s[s == False]
             if not s.empty:
                 err_list.extend(
-                    ('Row {}'.format(str(index + 2)), 'Column {}'.format(column))
+                    'Row {}, Column {}'.format(str(index + 2), column)
                     for index in s.index.tolist())
         return (False, err_list) if err_list else (True, None)
 
@@ -210,7 +209,7 @@ class Validator:
             s = s[s == True]
             if not s.empty:
                 err_list.extend(
-                    ('Row {}'.format(str(index + 2)), 'Column {}'.format(column))
+                    'Row {}, Column {}'.format(str(index + 2), column)
                     for index in s.index.tolist())
         return (False, err_list) if err_list else (True, None)
 
