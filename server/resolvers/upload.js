@@ -75,7 +75,9 @@ export default {
 				const s3Response = await s3.upload(params).promise()
 
 				await axios.post(
-					'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation',
+					process.env.ENVIRONMENT === 'DEV'
+						? 'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation'
+						: 'https://fynpwsijxl.execute-api.us-east-2.amazonaws.com/stage/validation',
 					{
 						job_ingestion_id: job.id,
 						file_path: s3Response.Location
