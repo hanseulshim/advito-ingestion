@@ -17,6 +17,7 @@ provider:
     S3: ${self:custom.environment.S3}
     S3_KEY: ${self:custom.environment.S3_KEY}
     URL: ${self:custom.environment.URL}
+    ENVIRONMENT: ${self:custom.environment.ENVIRONMENT}
   vpc:
     securityGroupIds:
       - 'sg-09b7d9888c893594d'
