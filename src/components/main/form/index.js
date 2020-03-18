@@ -3,15 +3,12 @@ import { useQuery } from '@apollo/client'
 import styled from 'styled-components'
 import { Title } from 'components/common/Typography'
 import { Alert, DatePicker } from 'antd'
-import { SpinLoader } from 'components/common/Loader'
-import ErrorMessage from 'components/common/ErrorMessage'
 import FileUpload from './FileUpload'
 import SelectPractice from './SelectPractice'
 import SelectClient from './SelectClient'
 import SelectTemplate from './SelectTemplate'
 import SelectSource from './SelectSource'
 import JobProgress from './JobProgress'
-// import JobProgress1 from './JobProgress1'
 import { PRACTICE_AREA_LIST, TEMPLATE_LIST } from 'api/queries'
 const { RangePicker } = DatePicker
 
@@ -69,7 +66,7 @@ const Form = () => {
   const [jobId, setJobId] = useState(null)
   const [message, setMessage] = useState({})
 
-  const { loading, error, data, client } = useQuery(PRACTICE_AREA_LIST, {
+  const { data, client } = useQuery(PRACTICE_AREA_LIST, {
     variables: { clientId: inputs.client },
     fetchPolicy: 'network-only'
   })
@@ -98,9 +95,9 @@ const Form = () => {
       %0D%0A
       Username: ${user}
       %0D%0A
-      Practice Area Selection: ${applicationName}
+      Practice Area Selection: ${applicationName || 'undefined'}
       %0D%0A
-      Template: ${templateName}
+      Template: ${templateName || 'undefined'}
       %0D%0A
       `
   }
@@ -162,9 +159,6 @@ const Form = () => {
     }))
   }
 
-  //   if (loading) return <SpinLoader />
-  //   if (error) return <ErrorMessage error={error} />
-
   return (
     <Container>
       <StyledTitle>Ingestion Console</StyledTitle>
@@ -216,14 +210,6 @@ const Form = () => {
           MessageHeading={MessageHeading}
         />
       )}
-      {/* {jobId && (
-				<JobProgress1
-					setJobId={setJobId}
-					jobId={jobId}
-					setMessage={setMessage}
-					MessageHeading={MessageHeading}
-				/>
-			)} */}
       {message.message && (
         <Message message={message.message} type={message.type} showIcon />
       )}
