@@ -5,11 +5,12 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "sls offline -s dev",
-		"start:staging": "sls offline -s staging",
 		"start:prod": "sls offline -s prod",
+		"alpha": "sls deploy -s alpha --aws-profile advito",
+		"beta": "sls deploy -s beta --aws-profile advito",
 		"dev": "sls deploy -s dev --aws-profile advito",
-		"staging": "sls deploy -s staging --aws-profile advito",
-		"prod": "sls deploy -s prod --aws-profile advito"
+		"prod": "sls deploy -s prod --aws-profile advito",
+		"all": "yarn alpha && yarn beta && yarn dev && yarn prod"
 	},
 	"author": "",
 	"license": "ISC",
