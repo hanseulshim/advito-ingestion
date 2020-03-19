@@ -66,7 +66,7 @@ const Form = () => {
   const [jobId, setJobId] = useState(null)
   const [message, setMessage] = useState({})
 
-  const { data, client } = useQuery(PRACTICE_AREA_LIST, {
+  const { data, client, error } = useQuery(PRACTICE_AREA_LIST, {
     variables: { clientId: inputs.client },
     fetchPolicy: 'network-only'
   })
@@ -75,31 +75,43 @@ const Form = () => {
     const user = JSON.parse(localStorage.getItem('advito-ingestion-user'))
       .displayName
 
-    const applicationName = data.practiceAreaList.find(
-      app => app.id === inputs.application
-    ).applicationName
+    if (!error) {
+      const applicationName = data.practiceAreaList.find(
+        app => app.id === inputs.application
+      ).applicationName
 
-    const { templateList } = client.readQuery({
-      query: TEMPLATE_LIST,
-      variables: {
-        applicationId: inputs.application
-      }
-    })
+      const { templateList } = client.readQuery({
+        query: TEMPLATE_LIST,
+        variables: {
+          applicationId: inputs.application
+        }
+      })
 
-    const templateName = templateList.find(
-      template => template.id === inputs.template
-    ).templateName
+      const templateName = templateList.find(
+        template => template.id === inputs.template
+      ).templateName
 
-    return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request/Source Not Listed
-      &body=Please provide a detailed description of the missing data source so that we can provide prompt assisstance.%0D%0A
-      %0D%0A
-      Username: ${user}
-      %0D%0A
-      Practice Area Selection: ${applicationName || 'undefined'}
-      %0D%0A
-      Template: ${templateName || 'undefined'}
-      %0D%0A
-      `
+      return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request/Source Not Listed
+        &body=Please provide a detailed description of the missing data source so that we can provide prompt assisstance.%0D%0A
+        %0D%0A
+        Username: ${user}
+        %0D%0A
+        Practice Area Selection: ${applicationName || 'undefined'}
+        %0D%0A
+        Template: ${templateName || 'undefined'}
+        %0D%0A
+        `
+    } else
+      return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request/Source Not Listed
+    &body=Please provide a detailed description of the missing data source so that we can provide prompt assisstance.%0D%0A
+    %0D%0A
+    Username: ${user}
+    %0D%0A
+    Practice Area Selection: ${'undefined'}
+    %0D%0A
+    Template: ${'undefined'}
+    %0D%0A
+    `
   }
 
   const handleInputChange = (key, value) => {
