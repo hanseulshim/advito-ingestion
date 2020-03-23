@@ -50,21 +50,21 @@ INSERT INTO client_advito_application_link (client_id, advito_application_id)
 
 ---------------------------------- ADVITO DB
 ---------------------------------- SPRINT 5
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency+Air+Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Air';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency+Car_Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Car';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency+Hotel_Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Hotel';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency+Rail_Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Rail';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/CreditCard+Air_Template_2020_360v1.xlsx' WHERE template_name = 'Credit Card - Air';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency_Air_Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Air';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency_Car_Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Car';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency_Hotel_Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Hotel';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Agency_Rail_Template_2020_360v1.xlsx' WHERE template_name = 'Agency: Rail';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/CreditCard_Air_Template_2020_360v1.xlsx' WHERE template_name = 'Credit Card - Air';
 UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/CreditCard_Template_2020_360v1.xlsx' WHERE template_name = 'Credit Card';
 UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Supplier_Car_Template_2020_360v1.xlsx' WHERE template_name = 'Supplier: Car';
 UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Supplier_Rail_Template_2020_360v1.xlsx' WHERE template_name = 'Supplier: Rail';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/ADS+Ticket+Template_2020_Airv1.xlsx' WHERE template_name = 'Ticket';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/ADS+Segment+Template_2020_Airv1.xlsx' WHERE template_name = 'Segment';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Expense+Template_30Dec2019.xlsx' WHERE template_name = 'Expense';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel+-+Agency+(Summarized).xlsx' WHERE template_name = 'Agency (Summarized)';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel+-+Agency+(Transactional).xlsx' WHERE template_name = 'Agency (Transactional)';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel+-+Credit+Card+(Summarized).xlsx' WHERE template_name = 'Credit Card (Summarized)';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel+-+Credit+Card+(Transactional).xlsx' WHERE template_name = 'Credit Card (Transactional)';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel+-+Expense+(Transactional).xlsx' WHERE template_name = 'Expense (Transactional)';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel+-+Supplier+(Summarized).xlsx' WHERE template_name = 'Supplier (Summarized)';
-UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel+-+Supplier+(Transactional).xlsx' WHERE template_name = 'Supplier (Transactional)';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/ADS_Ticket_Template_2020_Airv1.xlsx' WHERE template_name = 'Ticket';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/ADS_Segment_Template_2020_Airv1.xlsx' WHERE template_name = 'Segment';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Expense_Template_30Dec2019.xlsx' WHERE template_name = 'Expense';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel-Agency(Summarized).xlsx' WHERE template_name = 'Agency (Summarized)';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel-Agency(Transactional).xlsx' WHERE template_name = 'Agency (Transactional)';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel-CreditCard+(Summarized).xlsx' WHERE template_name = 'Credit Card (Summarized)';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel-CreditCard+(Transactional).xlsx' WHERE template_name = 'Credit Card (Transactional)';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel-Expense(Transactional).xlsx' WHERE template_name = 'Expense (Transactional)';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel-Supplier(Summarized).xlsx' WHERE template_name = 'Supplier (Summarized)';
+UPDATE advito_application_template SET template_path = 'https://advito-ingestion-templates.s3.us-east-2.amazonaws.com/Hotel-Supplier(Transactional).xlsx' WHERE template_name = 'Supplier (Transactional)';
