@@ -167,7 +167,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
           .displayName
 
         return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request
-				&body=Please provide a detailed description of your need so that we can provide prompt assisstance.%0D%0A
+				&body=Please provide a detailed description of your need so that we can provide prompt assistance.%0D%0A
 				%0D%0A
 				Username: ${user}
 				%0D%0A

@@ -92,7 +92,7 @@ const Form = () => {
       ).templateName
 
       return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request/Source Not Listed
-        &body=Please provide a detailed description of the missing data source so that we can provide prompt assisstance.%0D%0A
+        &body=Please provide a detailed description of the missing data source so that we can provide prompt assistance.%0D%0A
         %0D%0A
         Username: ${user}
         %0D%0A
@@ -103,7 +103,7 @@ const Form = () => {
         `
     } else
       return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request/Source Not Listed
-    &body=Please provide a detailed description of the missing data source so that we can provide prompt assisstance.%0D%0A
+    &body=Please provide a detailed description of the missing data source so that we can provide prompt assistance.%0D%0A
     %0D%0A
     Username: ${user}
     %0D%0A
