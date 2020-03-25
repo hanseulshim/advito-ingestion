@@ -55,3 +55,16 @@ export const getApi = () => {
 		? 'https://2h33cdp67l.execute-api.us-east-2.amazonaws.com/prod/graphql'
 		: 'http://localhost:4000/graphql'
 }
+
+export const getAuthApi = () => {
+	const REACT_APP_STAGE = process.env.REACT_APP_STAGE
+	return REACT_APP_STAGE === 'dev'
+		? 'https://mv3ohvxam8.execute-api.us-east-2.amazonaws.com/dev/graphql'
+		: REACT_APP_STAGE === 'alpha'
+		? 'https://mv3ohvxam8.execute-api.us-east-2.amazonaws.com/dev/graphql'
+		: REACT_APP_STAGE === 'beta'
+		? 'https://sewnh0p54a.execute-api.us-east-2.amazonaws.com/staging/graphql'
+		: REACT_APP_STAGE === 'prod'
+		? 'https://lkkkz4lxwc.execute-api.us-east-2.amazonaws.com/production/graphql'
+		: 'http://localhost:4000/local/graphql'
+}

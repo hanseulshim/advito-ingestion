@@ -5,10 +5,14 @@ import { SEND_RESET_PASSWORD } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
 import { SkeletonLoader } from 'components/common/Loader'
+import { authClient } from 'index'
 
 const ResetPasswordModal = ({ form, visible, setVisible }) => {
 	const [sendResetPasswordEmail, { loading, error, data }] = useMutation(
-		SEND_RESET_PASSWORD
+		SEND_RESET_PASSWORD,
+		{
+			client: authClient
+		}
 	)
 
 	const handleSubmit = async ({ email }) => {
