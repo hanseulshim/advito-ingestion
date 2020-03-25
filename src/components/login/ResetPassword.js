@@ -10,6 +10,7 @@ import { RESET_PASSWORD } from 'api'
 import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
 import { SkeletonLoader } from 'components/common/Loader'
+import { authClient } from 'index'
 
 const Container = styled.div`
 	width: 100%;
@@ -59,7 +60,12 @@ const Link = styled.div`
 const RestPassword = ({ form }) => {
 	const history = useHistory()
 	const location = useLocation()
-	const [resetPassword, { loading, error, data }] = useMutation(RESET_PASSWORD)
+	const [resetPassword, { loading, error, data }] = useMutation(
+		RESET_PASSWORD,
+		{
+			client: authClient
+		}
+	)
 	const params = queryString.parse(location.search)
 	const { t: token = '' } = params
 
