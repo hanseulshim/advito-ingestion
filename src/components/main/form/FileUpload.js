@@ -56,6 +56,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 
 	const handleFileUpload = async rowCount => {
 		try {
+			toggleModal()
 			if (!fileList.length) return
 			const file = fileList[0].originFileObj
 			const fileSize = file.size
@@ -72,7 +73,6 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 					base64
 				}
 			})
-			toggleModal()
 		} catch (e) {
 			toggleModal()
 			setMessage({ message: e.message, type: 'error' })
