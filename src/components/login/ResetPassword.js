@@ -69,19 +69,14 @@ const RestPassword = ({ form }) => {
 	const params = queryString.parse(location.search)
 	const { t: token = '' } = params
 
-	const handleSubmit = e => {
-		e.preventDefault()
-		form.validateFields(async (err, { password, confirmPassword }) => {
-			if (!err) {
-				try {
-					await resetPassword({
-						variables: { password, confirmPassword, token }
-					})
-				} catch (e) {
-					console.error('Error in reset password form: ', e)
-				}
-			}
-		})
+	const handleSubmit = async ({ password, confirmPassword }) => {
+		try {
+			await resetPassword({
+				variables: { password, confirmPassword, token }
+			})
+		} catch (e) {
+			console.error('Error in reset password form: ', e)
+		}
 	}
 
 	return (
@@ -89,12 +84,13 @@ const RestPassword = ({ form }) => {
 			<Logo src={advitoLogo} />
 			<Title>Reset Password</Title>
 			<FormContainer>
-				<Form onSubmit={handleSubmit}>
+				<Form onFinish={handleSubmit}>
 					{loading ? (
 						<SkeletonLoader />
 					) : (
 						<>
 							<Form.Item
+								name="password"
 								rules={[
 									{ required: true, message: 'Please input your password!' }
 								]}
@@ -108,6 +104,7 @@ const RestPassword = ({ form }) => {
 								/>
 							</Form.Item>
 							<Form.Item
+								name="confirmPassword"
 								rules={[
 									{ required: true, message: 'Please input your password!' }
 								]}
