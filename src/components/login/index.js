@@ -12,6 +12,7 @@ import ErrorMessage from 'components/common/ErrorMessage'
 import SuccessMessage from 'components/common/SuccessMessage'
 import { SkeletonLoader } from 'components/common/Loader'
 import { setUser } from 'helper'
+import { authClient } from 'index'
 
 const Container = styled.div`
 	width: 100%;
@@ -64,7 +65,9 @@ const Link = styled.div`
 
 const Login = () => {
 	const [visible, setVisible] = useState(false)
-	const [login, { loading, error, data }] = useMutation(LOGIN)
+	const [login, { loading, error, data }] = useMutation(LOGIN, {
+		client: authClient
+	})
 
 	const handleSubmit = async ({ username, password }) => {
 		try {

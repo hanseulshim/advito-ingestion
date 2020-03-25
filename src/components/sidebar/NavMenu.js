@@ -8,6 +8,7 @@ import { SpinLoader } from 'components/common/Loader'
 import { removeUser, getUser } from 'helper'
 import { SettingFilled } from '@ant-design/icons'
 import colors from 'styles/variables'
+import { authClient } from 'index'
 
 const LogOut = styled.span`
 	color: ${props => props.theme.white};
@@ -19,7 +20,9 @@ const LogOut = styled.span`
 `
 
 const NavMenu = () => {
-	const [logout, { loading, error, data }] = useMutation(LOGOUT)
+	const [logout, { loading, error, data }] = useMutation(LOGOUT, {
+		client: authClient
+	})
 	const { sessionToken = '' } = getUser()
 	if (loading) return <SpinLoader />
 	if (data || error) removeUser()
