@@ -40,14 +40,14 @@ const sessionMiddleware = new ApolloLink((operation, forward) => {
 
 const authMiddleware = new ApolloLink((operation, forward) => {
 	const Authorization = getToken()
-	if (Authorization) {
-		operation.setContext({
-			headers: {
-				Authorization,
-				application: 4 // Ingestion Id
-			}
-		})
-	}
+	const headers = Authorization
+		? { Authorization, application: 4 }
+		: {
+				application: 4
+		  }
+	operation.setContext({
+		headers
+	})
 	return forward(operation)
 })
 
