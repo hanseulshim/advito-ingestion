@@ -64,5 +64,5 @@ export const getAuthApi = () => {
 		? 'https://sewnh0p54a.execute-api.us-east-2.amazonaws.com/staging/graphql'
 		: REACT_APP_STAGE === 'prod'
 		? 'https://lkkkz4lxwc.execute-api.us-east-2.amazonaws.com/production/graphql'
-		: 'http://localhost:4000/local/graphql'
+		: 'http://localhost:8080/local/graphql'
 }

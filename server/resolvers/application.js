@@ -19,7 +19,7 @@ export default {
 				.leftJoin('advitoUser as u', 'u.id', 'ur.advitoUserId')
 				.where('u.id', user.id)
 				.andWhere('a.isActive', true),
-		practiceAreaList: async (_, { clientId }) =>
+		practiceAreaList: async (_, { clientId }, { user }) =>
 			AdvitoApplication.query()
 				.select('a.id', 'a.applicationName')
 				.alias('a')
@@ -28,7 +28,15 @@ export default {
 					'c.advitoApplicationId',
 					'a.id'
 				)
+				.leftJoin(
+					'advitoApplicationRole as ar',
+					'ar.advitoApplicationId',
+					'a.id'
+				)
+				.leftJoin('advitoUserRoleLink as ur', 'ur.advitoRoleId', 'ar.id')
+				.leftJoin('advitoUser as u', 'u.id', 'ur.advitoUserId')
 				.where('c.clientId', clientId)
+				.andWhere('u.id', user.id)
 				.andWhere('a.isActive', true),
 		templateList: async (_, { applicationId }) =>
 			await AdvitoApplicationTemplate.query()
