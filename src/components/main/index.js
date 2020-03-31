@@ -28,7 +28,7 @@ const Header = styled.div`
 `
 
 const Main = () => {
-	const [bcd, setBcd] = useState(false)
+	const [bcd, setBcd] = useState(null)
 	const location = useLocation()
 	const history = useHistory()
 	const params = queryString.parse(location.search)
@@ -39,6 +39,8 @@ const Main = () => {
 		const user = getUser()
 		if (user.bcd) {
 			setBcd(user.bcd)
+		} else {
+			setBcd(false)
 		}
 	}, [params])
 	return (
@@ -47,7 +49,10 @@ const Main = () => {
 				<Sidebar />
 				<FormContainer>
 					<Header>
-						<img src={bcd ? bcdLogo : advitoLogo} alt="advito logo" />
+						<img
+							src={bcd === null ? null : bcd ? bcdLogo : advitoLogo}
+							alt="advito logo"
+						/>
 					</Header>
 					<Form />
 				</FormContainer>
