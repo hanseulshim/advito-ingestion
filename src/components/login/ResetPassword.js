@@ -57,7 +57,7 @@ const Link = styled.div`
 	}
 `
 
-const RestPassword = ({ form }) => {
+const RestPassword = () => {
 	const history = useHistory()
 	const location = useLocation()
 	const [resetPassword, { loading, error, data }] = useMutation(

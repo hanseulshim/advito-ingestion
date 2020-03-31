@@ -1,10 +1,9 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { Popover } from 'antd'
 import './NavMenu.css'
 import { LOGOUT } from 'api'
 import { useMutation } from '@apollo/client'
-import { SpinLoader } from 'components/common/Loader'
 import { removeUser, getUser } from 'helper'
 import { SettingFilled } from '@ant-design/icons'
 import colors from 'styles/variables'
@@ -20,12 +19,17 @@ const LogOut = styled.span`
 `
 
 const NavMenu = () => {
-	const [logout, { loading, error, data }] = useMutation(LOGOUT, {
-		client: authClient
+	const [sessionToken, setSessionToken] = useState('')
+	useEffect(() => {
+		const { sessionToken } = getUser()
+		setSessionToken(sessionToken)
+	}, [])
+	const [logout] = useMutation(LOGOUT, {
+		client: authClient,
+		onCompleted: () => {
+			removeUser()
+		}
 	})
-	const { sessionToken = '' } = getUser()
-	if (loading) return <SpinLoader />
-	if (data || error) removeUser()
 	return (
 		<Popover
 			content={
