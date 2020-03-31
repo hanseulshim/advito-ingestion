@@ -57,7 +57,7 @@ const Link = styled.div`
 	}
 `
 
-const RestPassword = ({ form }) => {
+const ResetPassword = () => {
 	const history = useHistory()
 	const location = useLocation()
 	const [resetPassword, { loading, error, data }] = useMutation(
@@ -136,4 +136,4 @@ const RestPassword = ({ form }) => {
 	)
 }
 
-export default RestPassword
+export default ResetPassword

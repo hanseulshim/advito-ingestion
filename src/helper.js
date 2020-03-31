@@ -1,12 +1,20 @@
 import history from './history'
 import moment from 'moment'
+import isEmpty from 'lodash.isempty'
+import queryString from 'query-string'
 
 export const formatDate = date => {
 	return date ? moment(date).format('MMMM DD, YYYY') : ''
 }
 
 export const getToken = () => {
-	if (localStorage.getItem('advito-user')) {
+	const params = window.location.href.split('?')[1]
+	const url = params ? `?${params}` : ''
+	const user = queryString.parse(url)
+	if (!isEmpty(user)) {
+		setUser({ ...user, bcd: true })
+		return user.sessionToken
+	} else if (localStorage.getItem('advito-user')) {
 		const { sessionToken } = JSON.parse(localStorage.getItem('advito-user'))
 		return sessionToken
 	} else return ''
@@ -37,8 +45,13 @@ export const setUser = user => {
 }
 
 export const removeUser = () => {
+	const user = JSON.parse(localStorage.getItem('advito-user'))
 	localStorage.removeItem('advito-user')
-	history.push('/login')
+	if (user && user.bcd) {
+		window.location.href = 'http://ingestion-console.bcdtravel.com'
+	} else {
+		history.push('/login')
+	}
 }
 
 export const getApi = () => {
