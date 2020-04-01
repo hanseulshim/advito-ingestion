@@ -83,7 +83,7 @@ const UploadConfirmation = ({ visible, file, onOk, ...props }) => {
 			{!file && (
 				<p>No file selected. Please click or drag a file to upload area</p>
 			)}
-			{parsingError && <p>{parsingError}</p>}
+			{file && parsingError && <p>{parsingError}</p>}
 		</Modal>
 	)
 }
