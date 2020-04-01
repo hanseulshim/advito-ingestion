@@ -68,7 +68,11 @@ const UploadConfirmation = ({ visible, file, onOk, ...props }) => {
 		<Modal
 			title="Confirm File Upload"
 			visible={visible}
-			okButtonProps={{ disabled: !file || parsingError, type: 'primary' }}
+			okButtonProps={{
+				style: { display: !file || parsingError ? 'none' : '' },
+				disabled: !file || parsingError,
+				type: 'primary'
+			}}
 			cancelButtonProps={{ type: 'default' }}
 			onOk={() => onOk(rowsArray.length)}
 			{...props}
