@@ -77,7 +77,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 		variables: { jobId },
 		skip: !jobId,
 		pollInterval: 3000,
-		fetchPolicy: 'network-only'
+		fetchPolicy: 'network-only',
 	})
 	if (loading) return <SpinLoader />
 	if (error) return <ErrorMessage error={error} />
@@ -90,7 +90,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 		jobNote,
 		processingStartTimestamp,
 		templateName,
-		applicationName
+		applicationName,
 	} = data.getJob
 	if (isComplete) {
 		stopPolling()
@@ -103,7 +103,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 						contained {countRows} rows and has the job name {jobName}
 					</MessageHeading>
 				),
-				type: 'success'
+				type: 'success',
 			})
 		} else if (jobStatus === 'error') {
 			const json = JSON.parse(jobNote)
@@ -156,15 +156,14 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 				if (count > 0) {
 					emailArray.push(
 						` %0D%0A ${formattedKey} : ${[
-							value.map(v => v.replace(',', ' ')).join(', ')
+							value.map((v) => v.replace(',', ' ')).join(', '),
 						]}` + `%0D%0A`
 					)
 				}
 			}
 
 			const getMailTo = () => {
-				const user = JSON.parse(localStorage.getItem('advito-ingestion-user'))
-					.displayName
+				const user = JSON.parse(localStorage.getItem('advito-user')).displayName
 
 				return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request
 				&body=Please provide a detailed description of your need so that we can provide prompt assistance.%0D%0A
@@ -202,7 +201,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 						</div>
 					</>
 				),
-				type: 'error'
+				type: 'error',
 			})
 		}
 		setJobId(null)
