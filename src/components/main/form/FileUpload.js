@@ -1,52 +1,127 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-
-import { Upload, Icon, message } from 'antd'
-
+import { Upload, Button } from 'antd'
+import { InboxOutlined } from '@ant-design/icons'
+import { useMutation } from '@apollo/client'
+import { UPLOAD_FILE } from 'api/mutations'
+import UploadConfirmation from './UploadConfirmation'
 const { Dragger } = Upload
 
 const Container = styled.div`
-  margin-bottom: ${props => props.theme.verticalSpace};
+	display: flex;
+	flex-direction: column;
+	margin-bottom: ${props => props.theme.verticalSpace};
 `
 
-const FileUpload = ({ disabled }) => {
-  const [validation, setValidation] = useState('')
+const UploadButton = styled(Button)`
+	margin: 25px 0;
+	align-self: center;
+	width: 100px;
+`
 
-  const onFileChange = info => {
-    const { status } = info.file
-    if (status !== 'uploading') {
-      console.log(info.file, info.fileList)
-    }
-    if (status === 'done') {
-      //   message.success(`${info.file.name} file uploaded successfully.`)
-      setValidation(
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
-      )
-    } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`)
-    }
-  }
+const toBase64 = file =>
+	new Promise((resolve, reject) => {
+		const reader = new FileReader()
+		reader.readAsDataURL(file)
+		reader.onload = () => resolve(reader.result)
+		reader.onerror = error => reject(error)
+	})
 
-  return (
-    <Container>
-      <Dragger
-        disabled={disabled}
-        name={'file'}
-        multiple={false}
-        action={'https://www.mocky.io/v2/5cc8019d300000980a055e76'}
-        onChange={onFileChange}
-        onRemove={() => setValidation('')}
-      >
-        <p className="ant-upload-drag-icon">
-          <Icon type="inbox" />
-        </p>
-        <p className="ant-upload-text">
-          Click or drag file to this area to upload
-        </p>
-      </Dragger>
-      <div>{validation}</div>
-    </Container>
-  )
+const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
+	const [fileList, setFile] = useState([])
+	const [uploadFile] = useMutation(UPLOAD_FILE, {
+		onCompleted: ({ uploadFile }) => {
+			setJobId(uploadFile)
+			setFile([])
+			setMessage({})
+		}
+	})
+	const [modal, setModal] = useState(false)
+
+	useEffect(() => {
+		if (inputs.source === 0) {
+			setFile([])
+		}
+	}, [inputs.source])
+
+	const dummyRequest = ({ onSuccess }) => {
+		setTimeout(() => {
+			onSuccess(null)
+		}, 0)
+	}
+
+	const toggleModal = () => {
+		setModal(!modal)
+	}
+
+	const handleFileUpload = async rowCount => {
+		try {
+			toggleModal()
+			if (!fileList.length) return
+			const file = fileList[0].originFileObj
+			const fileSize = file.size
+			const base64 = await toBase64(file)
+			await uploadFile({
+				variables: {
+					clientId: inputs.client,
+					sourceId: inputs.source,
+					dataStartDate: inputs.fileStartDate,
+					dataEndDate: inputs.fileEndDate,
+					fileName: file.name,
+					rowCount,
+					fileSize,
+					base64
+				}
+			})
+		} catch (e) {
+			toggleModal()
+			setMessage({ message: e.message, type: 'error' })
+		}
+	}
+
+	const onFileChange = async info => {
+		if (info.file.status === 'removed') {
+			setFile([])
+		} else {
+			info.file.status = 'done'
+			setFile([info.file])
+		}
+	}
+
+	return (
+		<>
+			<Container>
+				<Dragger
+					accept=".xlsx"
+					disabled={disabled}
+					multiple={false}
+					customRequest={dummyRequest}
+					showUploadList={{
+						showDownloadIcon: false
+					}}
+					onChange={onFileChange}
+					fileList={fileList}
+				>
+					<p className="ant-upload-drag-icon">
+						<InboxOutlined />
+					</p>
+					<p className="ant-upload-text">
+						Click or drag file to this area to upload
+					</p>
+				</Dragger>
+				<UploadButton type="primary" onClick={() => toggleModal()}>
+					Upload
+				</UploadButton>
+			</Container>
+			<UploadConfirmation
+				visible={modal}
+				file={fileList.length > 0 ? fileList[0].originFileObj : null}
+				onCancel={() => toggleModal()}
+				onOk={handleFileUpload}
+				selectedClient={inputs.client}
+			/>
+		</>
+	)
 }
 
 export default FileUpload

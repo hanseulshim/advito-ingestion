@@ -1,6 +1,5 @@
 import React from 'react'
-import styled from 'styled-components'
-import { useQuery } from '@apollo/react-hooks'
+import { useQuery } from '@apollo/client'
 import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
 import { Select } from 'antd'

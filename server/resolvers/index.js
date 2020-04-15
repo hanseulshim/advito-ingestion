@@ -4,13 +4,15 @@ import merge from 'lodash/merge'
 import user from './user'
 import client from './client'
 import application from './application'
+import upload from './upload'
 import moment from 'moment'
 
 export const resolvers = {
   ...merge(
     user,
     client,
-    application
+    application,
+    upload
   ),
   Date: new GraphQLScalarType({
     name: 'Date',

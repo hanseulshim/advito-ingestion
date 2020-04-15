@@ -11,9 +11,13 @@ provider:
     DB_USER: ${self:custom.environment.DB_USER}
     DB_PASSWORD: ${self:custom.environment.DB_PASSWORD}
     ADVITO_DB_DATABASE: ${self:custom.environment.ADVITO_DB_DATABASE}
-    AWS_SES_ACCESS_KEY_ID: ${self:custom.environment.AWS_SES_ACCESS_KEY_ID}
-    AWS_SES_SECRET_ACCESS_KEY: ${self:custom.environment.AWS_SES_SECRET_ACCESS_KEY}
-    AWS_SES_REGION: ${self:custom.environment.AWS_SES_REGION}
+    ACCESS_KEY_ID: ${self:custom.environment.ACCESS_KEY_ID}
+    SECRET_ACCESS_KEY: ${self:custom.environment.SECRET_ACCESS_KEY}
+    REGION: ${self:custom.environment.REGION}
+    S3: ${self:custom.environment.S3}
+    S3_KEY: ${self:custom.environment.S3_KEY}
+    URL: ${self:custom.environment.URL}
+    ENVIRONMENT: ${self:custom.environment.ENVIRONMENT}
   vpc:
     securityGroupIds:
       - 'sg-09b7d9888c893594d'
