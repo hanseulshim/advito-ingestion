@@ -2,12 +2,11 @@
 node_modules
 /dist
 /build
-/server/node_modules
-/server/.serverless
-/server/_warmup
-/server/.env
-/server/env.yml
-/server/.webpack
+.serverless
+_warmup
+.env
+env.yml
+.webpack
 
 # local env files
 .env.local
