@@ -75,11 +75,12 @@ export default {
 					ContentEncoding: 'base64'
 				}
 				const s3Response = await s3.upload(params).promise()
-
 				await axios.post(
-					process.env.ENVIRONMENT === 'DEV'
-						? 'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation'
-						: 'https://fynpwsijxl.execute-api.us-east-2.amazonaws.com/stage/validation',
+					process.env.ENVIRONMENT === 'PROD'
+						? 'https://0rihemrgij.execute-api.us-east-2.amazonaws.com/prod/validation'
+						: process.env.ENVIRONMENT === 'STAGING'
+						? 'https://fynpwsijxl.execute-api.us-east-2.amazonaws.com/stage/validation'
+						: 'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation',
 					{
 						job_ingestion_id: job.id,
 						file_path: s3Response.Location
