@@ -7,6 +7,7 @@ _warmup
 .env
 env.yml
 .webpack
+__pycache__
 
 # local env files
 .env.local

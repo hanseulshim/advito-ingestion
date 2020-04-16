@@ -14,12 +14,12 @@ def validation(event, context):
     args = event.get('body')
     args = json.loads(args) if type(args) != dict else args
     job_ingestion_id = args.get('job_ingestion_id')
-    file_path = args.get('file_path')
+    bucket_name = args.get('bucket_name')
     validation_passed = False
-    if job_ingestion_id and file_path:
+    if job_ingestion_id and bucket_name:
         validation_passed = Validator().validate(
             job_ingestion_id=job_ingestion_id,
-            file_path=file_path)
+            bucket_name=bucket_name)
     return {
         'statusCode': 200,
         'headers': {

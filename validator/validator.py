@@ -1,5 +1,7 @@
 import traceback
 import pandas as pd
+import boto3
+import io
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -30,7 +32,7 @@ class Validator:
         self.hotel_session.close()
         self.advito_session.close()
 
-    def validate(self, job_ingestion_id, file_path):
+    def validate(self, job_ingestion_id, bucket_name):
         try:
             job = (
                 self.advito_session.query(JobIngestion)
@@ -38,8 +40,16 @@ class Validator:
                 .one()
             )
 
+            aws_id = 'AKIATCJAOULB4WP3MPHG'
+            aws_secret = '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'
+            object_key = job.file_name
+            s3 = boto3.client('s3', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret)
+            obj = s3.get_object(Bucket=bucket_name, Key=object_key)
+            data = obj['Body'].read()
+
             # generate how to read excel file from job_ingestion
-            df = pd.read_excel(file_path, dtype=str)
+            # df = pd.read_excel(file_path, dtype=str)
+            df = pd.read_excel(io.BytesIO(data), encoding='utf-8')
 
             progress_step = 100 / len(self.validators)
             validation_passed = True
@@ -117,7 +127,7 @@ class Validator:
         """
         def _string_to_date(date_string, date_format='%Y-%m-%d %H:%M:%S'):
             try:
-                ret = datetime.strptime(date_string, date_format)
+                ret = datetime.strptime(str(date_string), date_format)
             except ValueError:
                 ret = False
             return ret
@@ -239,7 +249,4 @@ class Validator:
 
 
 if __name__ == '__main__':
-    # Validator().validate(ingest_job_id='123456789', file_path='ValidationTest.xlsx')
-    # Validator().validate(ingest_job_id='123456789', file_path='https://hotel-api-downloads.s3.us-east-2.amazonaws.com/ValidationTest.xlsx')
-    Validator().validate(job_ingestion_id='164', file_path='AgencyHotel_ValidationTest.xlsx')
-
+    Validator().validate(job_ingestion_id='11', bucket_name='advito-pci')

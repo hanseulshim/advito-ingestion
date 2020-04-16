@@ -1305,6 +1305,7 @@ class JobIngestion(Base):
     is_complete = Column(Boolean)
     job_status = Column(String(32))
     job_note = Column(Text)
+    file_name = Column(Text)
     created = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
     modified = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
 

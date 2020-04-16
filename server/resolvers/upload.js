@@ -66,16 +66,24 @@ export default {
 					processingStartTimestamp: new Date(),
 					jobNote: 0
 				})
+
+				const key = S3_KEY
+					? `${S3_KEY}/${job.id}_${Date.now()}_${fileName}`
+					: `${job.id}_${Date.now()}_${fileName}`
+
 				const params = {
 					Bucket: S3,
-					Key: S3_KEY
-						? `${S3_KEY}/${job.id}_${Date.now()}_${fileName}`
-						: `${job.id}_${Date.now()}_${fileName}`,
+					Key: key,
 					Body: base64Data,
 					ContentEncoding: 'base64'
 				}
-				const s3Response = await s3.upload(params).promise()
-				await axios.post(
+				await s3.upload(params).promise()
+
+				await JobIngestion.query().findById(job.id).patch({
+					fileName: key
+				})
+
+				const res = await axios.post(
 					process.env.ENVIRONMENT === 'PROD'
 						? 'https://0rihemrgij.execute-api.us-east-2.amazonaws.com/prod/validation'
 						: process.env.ENVIRONMENT === 'STAGING'
@@ -83,10 +91,9 @@ export default {
 						: 'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation',
 					{
 						job_ingestion_id: job.id,
-						file_path: s3Response.Location
+						bucket_name: S3
 					}
 				)
-
 				return job.id
 			} catch (err) {
 				console.log(err)
