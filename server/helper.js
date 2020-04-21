@@ -32,7 +32,7 @@ export const authenticateUser = async (sessionToken, advitoDb) => {
 	const roleLinkList = await user.$relatedQuery('advitoUserRoleLink', advitoDb)
 	const roleIds = roleLinkList.map((role) => +role.advitoRoleId)
 	if (!roleIds.includes(12) && !roleIds.includes(13))
-		throw new AuthenticationError('User has invalid roles')
+		throw new ApolloError('User has invalid roles', 401)
 	return {
 		...user,
 		name: user.fullName(),
