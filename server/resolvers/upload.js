@@ -1,7 +1,13 @@
 import AWS from 'aws-sdk'
 import { JobIngestion } from '../models'
 import axios from 'axios'
-const { ACCESS_KEY_ID, SECRET_ACCESS_KEY, S3, S3_KEY } = process.env
+const {
+	ACCESS_KEY_ID,
+	SECRET_ACCESS_KEY,
+	BUCKET_ORIGIN,
+	KEY,
+	BUCKET_DEST
+} = process.env
 const s3 = new AWS.S3({
 	accessKeyId: ACCESS_KEY_ID,
 	secretAccessKey: SECRET_ACCESS_KEY
@@ -67,17 +73,17 @@ export default {
 					jobNote: 0
 				})
 
-				const key = S3_KEY
-					? `${S3_KEY}/${job.id}_${Date.now()}_${fileName}`
+				const key = KEY
+					? `${KEY}/${job.id}_${Date.now()}_${fileName}`
 					: `${job.id}_${Date.now()}_${fileName}`
 
-				const params = {
-					Bucket: S3,
+				const uploadParams = {
+					Bucket: BUCKET_ORIGIN,
 					Key: key,
 					Body: base64Data,
 					ContentEncoding: 'base64'
 				}
-				await s3.upload(params).promise()
+				await s3.upload(uploadParams).promise()
 
 				await JobIngestion.query().findById(job.id).patch({
 					fileName: key
@@ -91,9 +97,27 @@ export default {
 						: 'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation',
 					{
 						job_ingestion_id: job.id,
-						bucket_name: S3
+						bucket_name: BUCKET_ORIGIN
 					}
 				)
+				if (res.data.success && process.env.ENVIRONMENT === 'PROD') {
+					const copyParams = {
+						Bucket: BUCKET_DEST,
+						CopySource: `/${BUCKET_ORIGIN}/${key}`,
+						Key: `upload/${key}`
+					}
+					const deleteParams = {
+						Bucket: BUCKET_ORIGIN,
+						Key: key
+					}
+					await s3.copyObject(copyParams).promise()
+					await s3.deleteObject(deleteParams).promise()
+					await JobIngestion.query()
+						.findById(job.id)
+						.patch({
+							fileName: `upload/${key}`
+						})
+				}
 				return job.id
 			} catch (err) {
 				console.log(err)

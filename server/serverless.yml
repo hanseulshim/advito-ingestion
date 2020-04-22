@@ -14,8 +14,9 @@ provider:
     ACCESS_KEY_ID: ${self:custom.environment.ACCESS_KEY_ID}
     SECRET_ACCESS_KEY: ${self:custom.environment.SECRET_ACCESS_KEY}
     REGION: ${self:custom.environment.REGION}
-    S3: ${self:custom.environment.S3}
-    S3_KEY: ${self:custom.environment.S3_KEY}
+    BUCKET_ORIGIN: ${self:custom.environment.BUCKET_ORIGIN}
+    BUCKET_DEST: ${self:custom.environment.BUCKET_DEST}
+    KEY: ${self:custom.environment.KEY}
     URL: ${self:custom.environment.URL}
     ENVIRONMENT: ${self:custom.environment.ENVIRONMENT}
   vpc:
