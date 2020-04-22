@@ -40,8 +40,8 @@ class Validator:
                 .one()
             )
 
-            aws_id = 'AKIATCJAOULB4WP3MPHG'
-            aws_secret = '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'
+            aws_id = 'AKIATCJAOULBYSVCTBM4'
+            aws_secret = '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'
             object_key = job.file_name
             s3 = boto3.client('s3', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret)
             obj = s3.get_object(Bucket=bucket_name, Key=object_key)
