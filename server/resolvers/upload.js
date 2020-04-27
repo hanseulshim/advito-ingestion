@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk'
-import { JobIngestion } from '../models'
+import { JobIngestion, AdvitoApplicationTemplateSource } from '../models'
 import axios from 'axios'
 const {
 	ACCESS_KEY_ID,
@@ -8,10 +8,12 @@ const {
 	KEY,
 	BUCKET_DEST
 } = process.env
-const s3 = new AWS.S3({
+AWS.config.update({
 	accessKeyId: ACCESS_KEY_ID,
 	secretAccessKey: SECRET_ACCESS_KEY
 })
+const s3 = new AWS.S3()
+const lambda = new AWS.Lambda()
 
 export default {
 	Query: {
@@ -83,11 +85,13 @@ export default {
 					Body: base64Data,
 					ContentEncoding: 'base64'
 				}
-				await s3.upload(uploadParams).promise()
 
-				await JobIngestion.query().findById(job.id).patch({
-					fileName: key
-				})
+				await Promise.all([
+					s3.upload(uploadParams).promise(),
+					JobIngestion.query().findById(job.id).patch({
+						fileName: key
+					})
+				])
 
 				const res = await axios.post(
 					process.env.ENVIRONMENT === 'PROD'
@@ -100,23 +104,50 @@ export default {
 						bucket_name: BUCKET_ORIGIN
 					}
 				)
-				if (res.data.success && process.env.ENVIRONMENT === 'PROD') {
-					const copyParams = {
-						Bucket: BUCKET_DEST,
-						CopySource: `/${BUCKET_ORIGIN}/${key}`,
-						Key: `upload/${key}`
+				if (res.data.success) {
+					if (process.env.ENVIRONMENT === 'PROD') {
+						const copyParams = {
+							Bucket: BUCKET_DEST,
+							CopySource: `/${BUCKET_ORIGIN}/${key}`,
+							Key: `upload/${key}`
+						}
+						const deleteParams = {
+							Bucket: BUCKET_ORIGIN,
+							Key: key
+						}
+						await s3.copyObject(copyParams).promise()
+						await Promise.all([
+							s3.deleteObject(deleteParams).promise(),
+							JobIngestion.query()
+								.findById(job.id)
+								.patch({
+									fileName: `upload/${key}`
+								})
+						])
 					}
-					const deleteParams = {
-						Bucket: BUCKET_ORIGIN,
-						Key: key
+					const templateSource = await AdvitoApplicationTemplateSource.query()
+						.findById(sourceId)
+						.select('t.advitoApplicationId')
+						.alias('s')
+						.leftJoin(
+							'advitoApplicationTemplate as t',
+							's.advitoApplicationTemplateId',
+							't.id'
+						)
+					if (+templateSource.advitoApplicationId === 1) {
+						// means this is a hotel template being uploaded
+						console.log('calling lambda')
+						const lambdaParams = {
+							FunctionName:
+								process.env.ENVIRONMENT === 'PROD'
+									? 'advito-ingestion-production-ingest-hotel-template'
+									: process.env.ENVIRONMENT === 'STAGING'
+									? 'advito-ingestion-staging-ingest-hotel-template'
+									: '	advito-ingestion-dev-ingest-hotel-template',
+							Payload: JSON.stringify({ jobIngestionId: job.id })
+						}
+						await lambda.invoke(lambdaParams).promise()
 					}
-					await s3.copyObject(copyParams).promise()
-					await s3.deleteObject(deleteParams).promise()
-					await JobIngestion.query()
-						.findById(job.id)
-						.patch({
-							fileName: `upload/${key}`
-						})
 				}
 				return job.id
 			} catch (err) {
