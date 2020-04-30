@@ -14,12 +14,18 @@ def validation(event, context):
     args = event.get('body')
     args = json.loads(args) if type(args) != dict else args
     job_ingestion_id = args.get('job_ingestion_id')
-    bucket_name = args.get('bucket_name')
+    bucket_origin = args.get('bucket_origin')
+    bucket_dest = args.get('bucket_dest')
+    environment = args.get('environment')
+    advito_application_id = args.get('advito_application_id')
     validation_passed = False
-    if job_ingestion_id and bucket_name:
+    if job_ingestion_id and bucket_origin:
         validation_passed = Validator().validate(
             job_ingestion_id=job_ingestion_id,
-            bucket_name=bucket_name)
+            bucket_origin=bucket_origin,
+            bucket_dest=bucket_dest,
+            environment=environment,
+            advito_application_id=advito_application_id)
     return {
         'statusCode': 200,
         'headers': {
