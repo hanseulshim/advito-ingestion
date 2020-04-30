@@ -33,7 +33,7 @@ class Validator:
         self.hotel_session.close()
         self.advito_session.close()
 
-    def validate(self, job_ingestion_id, bucket_name):
+    def validate(self, job_ingestion_id, bucket_origin, bucket_dest, environment, advito_application_id):
         
         try:
             # 0. Get job, template and column information
@@ -49,7 +49,8 @@ class Validator:
             aws_secret = 'BJHVADfTCe2nVqc0ief68lqPZmTchPtWLzhcvn7N'
             object_key = job.file_name
             s3 = boto3.client('s3', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret)
-            obj = s3.get_object(Bucket=bucket_name, Key=object_key)
+            lambda_client = boto3.client('lambda', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret)
+            obj = s3.get_object(Bucket=bucket_origin, Key=object_key)
             data = obj['Body'].read()
             
             df = pd.read_excel(io.BytesIO(data), encoding='utf-8')
@@ -76,6 +77,22 @@ class Validator:
             if validation_passed:
                 job.job_status = 'done'
                 job.job_note = None
+                # If the environment is production then copy the file into new bucket
+                if environment == 'PROD':
+                    s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin, Key=object_key)
+                    s3.delete_object(Bucket=bucket_dest, Key=object_key)
+                    job.file_name = 'upload/' + object_key
+                if advito_application_id == 1:
+                    function_name = 'advito-ingestion-dev-ingest-hotel-template'
+                    if environment == 'PROD':
+                        function_name = 'advito-ingestion-production-ingest-hotel-template'
+                    if environment == 'STAGING':
+                        function_name = 'advito-ingestion-staging-ingest-hotel-template'
+                    lambda_client.invoke(
+                        FunctionName=function_name,
+                        InvocationType='Event',
+                        Payload=json.dumps({'jobIngestionId': job_ingestion_id})
+                    )
             else:
                 job.job_status = 'error'
                 job.job_note = json.dumps(self.validation_errors)
@@ -252,4 +269,4 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='18369', bucket_name='advito-pci')
+    Validator().validate(job_ingestion_id='18408', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)

@@ -13,7 +13,6 @@ AWS.config.update({
 	secretAccessKey: SECRET_ACCESS_KEY
 })
 const s3 = new AWS.S3()
-const lambda = new AWS.Lambda()
 
 export default {
 	Query: {
@@ -42,11 +41,11 @@ export default {
 			{
 				clientId,
 				sourceId,
+				advitoApplicationId,
 				dataStartDate,
 				dataEndDate,
 				fileName,
 				base64,
-				rowCount,
 				fileSize
 			},
 			{ user }
@@ -66,7 +65,6 @@ export default {
 					dataStartDate,
 					dataEndDate,
 					originalFileName: fileName,
-					countRows: rowCount,
 					fileExtension: 'xlsx',
 					fileSize,
 					isComplete: false,
@@ -75,9 +73,12 @@ export default {
 					jobNote: 0
 				})
 
+				const truncFileName =
+					fileName.length > 80 ? fileName.substring(0, 80) : fileName
+
 				const key = KEY
-					? `${KEY}/${job.id}_${Date.now()}_${fileName}`
-					: `${job.id}_${Date.now()}_${fileName}`
+					? `${KEY}/${job.id}_${Date.now()}_${truncFileName}`
+					: `${job.id}_${Date.now()}_${truncFileName}`
 
 				const uploadParams = {
 					Bucket: BUCKET_ORIGIN,
@@ -93,7 +94,7 @@ export default {
 					})
 				])
 
-				const res = await axios.post(
+				axios.post(
 					process.env.ENVIRONMENT === 'PROD'
 						? 'https://0rihemrgij.execute-api.us-east-2.amazonaws.com/prod/validation'
 						: process.env.ENVIRONMENT === 'STAGING'
@@ -101,54 +102,12 @@ export default {
 						: 'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation',
 					{
 						job_ingestion_id: job.id,
-						bucket_name: BUCKET_ORIGIN
+						bucket_origin: BUCKET_ORIGIN,
+						bucket_dest: BUCKET_DEST,
+						environment: process.env.ENVIRONMENT,
+						advito_application_id: advitoApplicationId
 					}
 				)
-				if (res.data.success) {
-					if (process.env.ENVIRONMENT === 'PROD') {
-						const copyParams = {
-							Bucket: BUCKET_DEST,
-							CopySource: `/${BUCKET_ORIGIN}/${key}`,
-							Key: `upload/${key}`
-						}
-						const deleteParams = {
-							Bucket: BUCKET_ORIGIN,
-							Key: key
-						}
-						await s3.copyObject(copyParams).promise()
-						await Promise.all([
-							s3.deleteObject(deleteParams).promise(),
-							JobIngestion.query()
-								.findById(job.id)
-								.patch({
-									fileName: `upload/${key}`
-								})
-						])
-					}
-					const templateSource = await AdvitoApplicationTemplateSource.query()
-						.findById(sourceId)
-						.select('t.advitoApplicationId')
-						.alias('s')
-						.leftJoin(
-							'advitoApplicationTemplate as t',
-							's.advitoApplicationTemplateId',
-							't.id'
-						)
-					if (+templateSource.advitoApplicationId === 1) {
-						// means this is a hotel template being uploaded
-						console.log('calling lambda')
-						const lambdaParams = {
-							FunctionName:
-								process.env.ENVIRONMENT === 'PROD'
-									? 'advito-ingestion-production-ingest-hotel-template'
-									: process.env.ENVIRONMENT === 'STAGING'
-									? 'advito-ingestion-staging-ingest-hotel-template'
-									: '	advito-ingestion-dev-ingest-hotel-template',
-							Payload: JSON.stringify({ jobIngestionId: job.id })
-						}
-						await lambda.invoke(lambdaParams).promise()
-					}
-				}
 				return job.id
 			} catch (err) {
 				console.log(err)
