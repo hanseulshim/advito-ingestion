@@ -64,6 +64,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 			await uploadFile({
 				variables: {
 					clientId: inputs.client,
+					advitoApplicationId: inputs.application,
 					sourceId: inputs.source,
 					dataStartDate: inputs.fileStartDate,
 					dataEndDate: inputs.fileEndDate,

@@ -3,6 +3,7 @@ import gql from 'graphql-tag'
 export const UPLOAD_FILE = gql`
 	mutation uploadFile(
 		$clientId: Int!
+		$advitoApplicationId: Int!
 		$sourceId: Int!
 		$dataStartDate: Date!
 		$dataEndDate: Date!
@@ -12,6 +13,7 @@ export const UPLOAD_FILE = gql`
 	) {
 		uploadFile(
 			clientId: $clientId
+			advitoApplicationId: $advitoApplicationId
 			sourceId: $sourceId
 			dataStartDate: $dataStartDate
 			dataEndDate: $dataEndDate
