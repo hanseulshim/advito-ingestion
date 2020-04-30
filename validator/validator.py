@@ -6,10 +6,11 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from db.db import HotelSession, AdvitoSession
-from db.advito_models import AdvitoApplicationTemplateColumn, Currency, JobIngestion
+from db.advito_models import AdvitoApplicationTemplate, AdvitoApplicationTemplateSource, AdvitoApplicationTemplateColumn, Currency, JobIngestion
 
 
 class Validator:
+    
     # TODO: Add other validations here
     validators = {
         'incorrect_characters_validation': 'incorrectCharacters',
@@ -33,12 +34,16 @@ class Validator:
         self.advito_session.close()
 
     def validate(self, job_ingestion_id, bucket_name):
+        
         try:
+            # 0. Get job, template and column information
             job = (
                 self.advito_session.query(JobIngestion)
                 .filter(JobIngestion.id == job_ingestion_id)
                 .one()
             )
+            validation_passed = True
+            validation_run = True
 
             aws_id = 'AKIATCJAOULBYSVCTBM4'
             aws_secret = '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'
@@ -46,15 +51,12 @@ class Validator:
             s3 = boto3.client('s3', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret)
             obj = s3.get_object(Bucket=bucket_name, Key=object_key)
             data = obj['Body'].read()
-
-            # generate how to read excel file from job_ingestion
-            # df = pd.read_excel(file_path, dtype=str)
+            
             df = pd.read_excel(io.BytesIO(data), encoding='utf-8')
 
             progress_step = 100 / len(self.validators)
-            validation_passed = True
             for i, (validator, output) in enumerate(self.validators.items()):
-                validation_passed, validation_error = getattr(self, validator)(df)
+                validation_run, validation_error = getattr(self, validator)(df)
                 if validation_error:
                     validation_passed = False
                     self.validation_errors[output].extend(validation_error)
@@ -62,8 +64,9 @@ class Validator:
                 job_progress_percentage = str(int((i + 1) * progress_step))
                 job.job_note = job_progress_percentage
                 self.advito_session.commit()
-            print(self.validation_errors)
+                
             # update job
+            print(f"\n\n{self.validation_errors}\n\n")
             from datetime import datetime
             import json
             dt = datetime.now()
@@ -103,7 +106,7 @@ class Validator:
 
         def is_allowed(x):
             import re
-            pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?`&$()/|\-_'"]+$""")
+            pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?*@#`&$()/|\-_'"]+$""") # [ING87] Aded *, but also #@
             match_obj = pattern.match(x)
             return True if match_obj else False
 
@@ -211,7 +214,7 @@ class Validator:
         for column in df.columns.tolist():
             df[column] = df[column].astype(str).apply(clean_data)
         mask = df.apply(
-            lambda row: row.astype(str).str.contains(r'\d{15}', regex=True),
+            lambda row: row.astype(str).str.contains(r'^\d{15}$', regex=True),  # OPS1: Added ^$ anchors 
             axis=1)
         err_list = list()
         for column in mask.columns.tolist():
@@ -249,4 +252,4 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='11', bucket_name='advito-pci')
+    Validator().validate(job_ingestion_id='18369', bucket_name='advito-pci')
