@@ -7,7 +7,6 @@ export const UPLOAD_FILE = gql`
 		$dataStartDate: Date!
 		$dataEndDate: Date!
 		$fileName: String!
-		$rowCount: Int!
 		$fileSize: Int!
 		$base64: String!
 	) {
@@ -17,7 +16,6 @@ export const UPLOAD_FILE = gql`
 			dataStartDate: $dataStartDate
 			dataEndDate: $dataEndDate
 			fileName: $fileName
-			rowCount: $rowCount
 			fileSize: $fileSize
 			base64: $base64
 		)

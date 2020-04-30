@@ -10,7 +10,7 @@ const { Dragger } = Upload
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
-	margin-bottom: ${props => props.theme.verticalSpace};
+	margin-bottom: ${(props) => props.theme.verticalSpace};
 `
 
 const UploadButton = styled(Button)`
@@ -19,12 +19,12 @@ const UploadButton = styled(Button)`
 	width: 100px;
 `
 
-const toBase64 = file =>
+const toBase64 = (file) =>
 	new Promise((resolve, reject) => {
 		const reader = new FileReader()
 		reader.readAsDataURL(file)
 		reader.onload = () => resolve(reader.result)
-		reader.onerror = error => reject(error)
+		reader.onerror = (error) => reject(error)
 	})
 
 const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
@@ -34,7 +34,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 			setJobId(uploadFile)
 			setFile([])
 			setMessage({})
-		}
+		},
 	})
 	const [modal, setModal] = useState(false)
 
@@ -54,7 +54,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 		setModal(!modal)
 	}
 
-	const handleFileUpload = async rowCount => {
+	const handleFileUpload = async () => {
 		try {
 			toggleModal()
 			if (!fileList.length) return
@@ -68,10 +68,9 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 					dataStartDate: inputs.fileStartDate,
 					dataEndDate: inputs.fileEndDate,
 					fileName: file.name,
-					rowCount,
 					fileSize,
-					base64
-				}
+					base64,
+				},
 			})
 		} catch (e) {
 			toggleModal()
@@ -79,7 +78,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 		}
 	}
 
-	const onFileChange = async info => {
+	const onFileChange = async (info) => {
 		if (info.file.status === 'removed') {
 			setFile([])
 		} else {
@@ -97,7 +96,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 					multiple={false}
 					customRequest={dummyRequest}
 					showUploadList={{
-						showDownloadIcon: false
+						showDownloadIcon: false,
 					}}
 					onChange={onFileChange}
 					fileList={fileList}
