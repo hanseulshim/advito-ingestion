@@ -9,7 +9,7 @@ export const UPLOAD_FILE = gql`
 		$dataEndDate: Date!
 		$fileName: String!
 		$fileSize: Int!
-		$base64: String!
+		$key: String!
 	) {
 		uploadFile(
 			clientId: $clientId
@@ -19,7 +19,7 @@ export const UPLOAD_FILE = gql`
 			dataEndDate: $dataEndDate
 			fileName: $fileName
 			fileSize: $fileSize
-			base64: $base64
+			key: $key
 		)
 	}
 `

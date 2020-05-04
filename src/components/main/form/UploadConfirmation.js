@@ -4,10 +4,13 @@ import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
 import { Modal } from 'antd'
 import { CLIENT_LIST } from 'api/queries'
+import { GET_PRESIGNED_UPLOAD_URL } from 'api/queries'
 import XLSX from 'xlsx'
+import { client } from 'index'
 
-const UploadConfirmation = ({ visible, file, onOk, ...props }) => {
+const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 	const { loading, error, data } = useQuery(CLIENT_LIST)
+	const [signedUrl, updateSignedUrl] = useState(null)
 	const [message, setMessage] = useState('')
 	const [parsingError, setError] = useState('')
 
@@ -15,12 +18,24 @@ const UploadConfirmation = ({ visible, file, onOk, ...props }) => {
 		const setParsedFile = async () => {
 			if (file) {
 				try {
-					const data = await parseExcel(file)
-					setMessage(data)
+					const message = await parseExcel(file)
+					setMessage(message)
+
+					const result = await client.query({
+						query: GET_PRESIGNED_UPLOAD_URL,
+						variables: {
+							fileName: file.name,
+						},
+						fetchPolicy: 'network-only',
+						//fetch a POST with
+						onError: (e) => console.log(e),
+					})
+					updateSignedUrl(result.data.getPresignedUploadUrl)
 					setError('')
 				} catch (e) {
 					setError(e)
 					setMessage('')
+					updateSignedUrl(null)
 				}
 			}
 		}
@@ -72,18 +87,19 @@ const UploadConfirmation = ({ visible, file, onOk, ...props }) => {
 
 	if (loading) return <SpinLoader />
 	if (error) return <ErrorMessage error={error} />
+
 	return (
 		<Modal
 			title="Confirm File Upload"
 			visible={visible}
 			okButtonProps={{
 				style: {
-					display: !file || parsingError ? 'none' : '',
+					display: !file || parsingError || !signedUrl ? 'none' : '',
 				},
 				type: 'primary',
 			}}
 			cancelButtonProps={{ type: 'default' }}
-			onOk={() => onOk()}
+			onOk={() => uploadFile(signedUrl)}
 			{...props}
 		>
 			{file && message && <p>{message}</p>}

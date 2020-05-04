@@ -49,18 +49,18 @@ const MessageHeading = styled.div`
 
 const Form = () => {
 	const [inputs, setInputs] = useState({
-		application: 1,
-		client: 348,
-		fileEndDate: '2020-03-11',
-		fileStartDate: '2020-03-11',
-		source: 16,
-		template: 4,
-		// client: null,
-		// application: null,
-		// template: null,
-		// source: null,
-		// fileStartDate: null,
-		// fileEndDate: null,
+		// application: 1,
+		// client: 348,
+		// fileEndDate: '2020-03-11',
+		// fileStartDate: '2020-03-11',
+		// source: 16,
+		// template: 4,
+		client: null,
+		application: null,
+		template: null,
+		source: null,
+		fileStartDate: null,
+		fileEndDate: null,
 	})
 	// const [jobId, setJobId] = useState(83)
 	const [jobId, setJobId] = useState(null)

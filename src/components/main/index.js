@@ -19,12 +19,12 @@ const FormContainer = styled.div`
 	display: flex;
 	flex: 4;
 	flex-direction: column;
-	padding: ${props => props.theme.verticalSpace}
-		${props => props.theme.horizontalSpace};
+	padding: ${(props) => props.theme.verticalSpace}
+		${(props) => props.theme.horizontalSpace};
 `
 
 const Header = styled.div`
-	margin-bottom: ${props => props.theme.verticalSpace};
+	margin-bottom: ${(props) => props.theme.verticalSpace};
 `
 
 const Main = () => {

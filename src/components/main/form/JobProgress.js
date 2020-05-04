@@ -77,7 +77,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 		variables: { jobId },
 		skip: !jobId,
 		pollInterval: 3000,
-		fetchPolicy: 'network-only'
+		fetchPolicy: 'network-only',
 	})
 	if (loading) return <SpinLoader />
 	if (error) return <ErrorMessage error={error} />
@@ -90,7 +90,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 		jobNote,
 		processingStartTimestamp,
 		templateName,
-		applicationName
+		applicationName,
 	} = data.getJob
 	if (isComplete) {
 		stopPolling()
@@ -103,7 +103,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 						contained {countRows} rows and has the job name {jobName}
 					</MessageHeading>
 				),
-				type: 'success'
+				type: 'success',
 			})
 		} else if (jobStatus === 'error') {
 			const json = JSON.parse(jobNote)
@@ -156,7 +156,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 				if (count > 0) {
 					emailArray.push(
 						` %0D%0A ${formattedKey} : ${[
-							value.map((v) => v.replace(',', ' ')).join(', ')
+							value.map((v) => v.replace(',', ' ')).join(', '),
 						]}` + `%0D%0A`
 					)
 				}
@@ -201,7 +201,42 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 						</div>
 					</>
 				),
-				type: 'error'
+				type: 'error',
+			})
+		} else {
+			const getMailTo = () => {
+				const user = JSON.parse(localStorage.getItem('advito-user')).displayName
+
+				return `mailto:AdvitoServices@bcdtravel.eu?subject= Advito I%26A Ingestion Console Assistance Request
+				&body=Please provide a detailed description of your need so that we can provide prompt assistance.%0D%0A
+				%0D%0A
+				Username: ${user}
+				%0D%0A
+				Filename: ${originalFileName}
+				%0D%0A
+				Practice Area Selection: ${applicationName}
+				%0D%0A
+				Template: ${templateName}
+				%0D%0A
+				Date/time of ingestion attempt: ${new Date(+processingStartTimestamp)}
+				%0D%0A
+
+				`
+			}
+
+			setMessage({
+				message: (
+					<>
+						<ErrorCount>There was a server error.</ErrorCount>
+						<MessageHeading>{jobNote}</MessageHeading>
+						<div>
+							Tried everything and still getting errors?{' '}
+							<a href={getMailTo()}>Contact I&amp;A</a> within 5 days of upload
+							for assistance.
+						</div>
+					</>
+				),
+				type: 'error',
 			})
 		}
 		setJobId(null)
