@@ -50,7 +50,7 @@ class Validator:
             aws_secret = 'BJHVADfTCe2nVqc0ief68lqPZmTchPtWLzhcvn7N'
             object_key = job.file_name
             s3 = boto3.client('s3', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret)
-            lambda_client = boto3.client('lambda', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret)
+            lambda_client = boto3.client('lambda', aws_access_key_id=aws_id, aws_secret_access_key=aws_secret, region_name='us-east-2')
             obj = s3.get_object(Bucket=bucket_origin, Key=object_key)
             data = obj['Body'].read()
             
@@ -74,37 +74,57 @@ class Validator:
             import json
             dt = datetime.now()
             job.is_complete = True
+            row_count = len(df.index)
+            row_const = 150
+            job.count_rows = row_count
             job.processing_end_timestamp = dt
             job.processing_dur_sec = (dt - job.processing_start_timestamp).total_seconds()
             if validation_passed:
                 job.job_status = 'done'
                 job.job_note = None
                 # If the environment is production then copy the file into new bucket
-                if environment == 'PROD':
-                    s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin, Key=object_key)
-                    s3.delete_object(Bucket=bucket_dest, Key=object_key)
-                    job.file_name = 'upload/' + object_key
-                if advito_application_id == 1:
-                    function_name = 'advito-ingestion-dev-ingest-hotel-template'
+                row_range = int(row_count / row_const) + (row_count % row_const > 0)
+                for x in range(row_range):
+                    current_range = x * row_const
                     if environment == 'PROD':
-                        function_name = 'advito-ingestion-production-ingest-hotel-template'
-                    if environment == 'STAGING':
-                        function_name = 'advito-ingestion-staging-ingest-hotel-template'
-                    lambda_client.invoke(
-                        FunctionName=function_name,
-                        InvocationType='Event',
-                        Payload=json.dumps({'jobIngestionId': job_ingestion_id})
-                    )
+                        s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin, Key=object_key)
+                        s3.delete_object(Bucket=bucket_dest, Key=object_key)
+                        job.file_name = 'upload/' + object_key
+                    if advito_application_id == 1:
+                        function_name = 'advito-ingestion-dev-ingest-hotel-template'
+                        if environment == 'PROD':
+                            function_name = 'advito-ingestion-production-ingest-hotel-template'
+                        if environment == 'STAGING':
+                            function_name = 'advito-ingestion-staging-ingest-hotel-template'
+                        # print(json.dumps(df.iloc[current_range:current_range + row_const - 1].to_json(orient='records')))
+                        end = current_range + len(df.iloc[current_range:current_range + row_const])
+                        print('Invoking for rows: ', current_range, end)
+                        lambda_client.invoke(
+                            FunctionName=function_name,
+                            InvocationType='Event',
+                            Payload=json.dumps({'jobIngestionId': job_ingestion_id, 'data': df.iloc[current_range:current_range + row_const].to_json(orient='records'), 'start': current_range, 'end': end})
+                        )
             else:
                 job.job_status = 'error'
                 job.job_note = json.dumps(self.validation_errors)
+            print('Done')
             self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
+            if job.id > 0:
+                job.is_complete = True
+                job.job_status = 'server-error'
+                job.job_note = 'Job ingestion id {} not found'.format(job_ingestion_id)
+                self.advito_session.commit()
             validation_passed = False
         # general exception
         except Exception as e:
             print(e)
+            if job.id > 0:
+                job.is_complete = True
+                job.job_status = 'server-error'
+                job.job_note = str(e)
+                self.advito_session.commit()
             traceback.print_exc()
 
             validation_passed = False
@@ -118,14 +138,9 @@ class Validator:
         :return:
         """
 
-        def clean_data(field):
-            if field:
-                field = field.strip().replace('-', '').replace(' ', '')
-            return field
-
         def is_allowed(x):
             import re
-            pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?*@#`&$()/|\-_'"]+$""") # [ING87] Aded *, but also #@
+            pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?*@#`&$()/|\-_+'"]+$""") # [ING87] Aded *, but also #@, and +
             match_obj = pattern.match(x)
             return True if match_obj else False
 
@@ -133,7 +148,7 @@ class Validator:
         df = data.copy()
         err_list = list()
         for column in df.columns.tolist():
-            s = df[column].astype(str).apply(clean_data).apply(is_allowed)
+            s = df[column].astype(str).apply(is_allowed)
             s = s[s == False]
             if not s.empty:
                 err_list.extend(
@@ -272,5 +287,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='18408', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
+    Validator().validate(job_ingestion_id='18503', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
     # Validator().validate(job_ingestion_id='18408')

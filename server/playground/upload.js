@@ -18,6 +18,10 @@ export default {
         templateName
         applicationName
       }
+      getPresignedUploadUrl(fileName: "test.xlsx") {
+        key
+        url
+      }
     }`
 	}
 }

@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk'
-import { JobIngestion, AdvitoApplicationTemplateSource } from '../models'
+import { JobIngestion } from '../models'
 import axios from 'axios'
 const {
 	ACCESS_KEY_ID,
@@ -33,6 +33,27 @@ export default {
 				)
 				.leftJoin('advitoApplication as a', 't.advitoApplicationId', 'a.id')
 			return { ...job, timestamp: new Date().getTime() }
+		},
+		getPresignedUploadUrl: async (_, { fileName }) => {
+			const truncFileName =
+				fileName.length > 80 ? fileName.substring(0, 80) : fileName
+
+			const key = KEY
+				? `${KEY}/${Date.now()}_${truncFileName}`
+				: `${Date.now()}_${truncFileName}`
+
+			const url = await s3.getSignedUrlPromise('putObject', {
+				Bucket: BUCKET_ORIGIN,
+				Key: key,
+				ContentType:
+					'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				Expires: 300
+			})
+
+			return {
+				key,
+				url
+			}
 		}
 	},
 	Mutation: {
@@ -45,18 +66,11 @@ export default {
 				dataStartDate,
 				dataEndDate,
 				fileName,
-				base64,
-				fileSize
+				fileSize,
+				key
 			},
 			{ user }
 		) => {
-			const base64Data = new Buffer.from(
-				base64.replace(
-					/^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/,
-					''
-				),
-				'base64'
-			)
 			try {
 				const job = await JobIngestion.query().insert({
 					advitoUserId: user.id,
@@ -70,29 +84,9 @@ export default {
 					isComplete: false,
 					jobStatus: 'running',
 					processingStartTimestamp: new Date(),
-					jobNote: 0
+					jobNote: 0,
+					fileName: key
 				})
-
-				const truncFileName =
-					fileName.length > 80 ? fileName.substring(0, 80) : fileName
-
-				const key = KEY
-					? `${KEY}/${job.id}_${Date.now()}_${truncFileName}`
-					: `${job.id}_${Date.now()}_${truncFileName}`
-
-				const uploadParams = {
-					Bucket: BUCKET_ORIGIN,
-					Key: key,
-					Body: base64Data,
-					ContentEncoding: 'base64'
-				}
-
-				await Promise.all([
-					s3.upload(uploadParams).promise(),
-					JobIngestion.query().findById(job.id).patch({
-						fileName: key
-					})
-				])
 
 				axios.post(
 					process.env.ENVIRONMENT === 'PROD'
