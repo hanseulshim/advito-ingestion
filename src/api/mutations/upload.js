@@ -3,23 +3,23 @@ import gql from 'graphql-tag'
 export const UPLOAD_FILE = gql`
 	mutation uploadFile(
 		$clientId: Int!
+		$advitoApplicationId: Int!
 		$sourceId: Int!
 		$dataStartDate: Date!
 		$dataEndDate: Date!
 		$fileName: String!
-		$rowCount: Int!
 		$fileSize: Int!
-		$base64: String!
+		$key: String!
 	) {
 		uploadFile(
 			clientId: $clientId
+			advitoApplicationId: $advitoApplicationId
 			sourceId: $sourceId
 			dataStartDate: $dataStartDate
 			dataEndDate: $dataEndDate
 			fileName: $fileName
-			rowCount: $rowCount
 			fileSize: $fileSize
-			base64: $base64
+			key: $key
 		)
 	}
 `

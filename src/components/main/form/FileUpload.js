@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Upload, Button } from 'antd'
+import { Upload, Button, Spin } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import { useMutation } from '@apollo/client'
 import { UPLOAD_FILE } from 'api/mutations'
@@ -10,7 +10,7 @@ const { Dragger } = Upload
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
-	margin-bottom: ${props => props.theme.verticalSpace};
+	margin-bottom: ${(props) => props.theme.verticalSpace};
 `
 
 const UploadButton = styled(Button)`
@@ -19,14 +19,6 @@ const UploadButton = styled(Button)`
 	width: 100px;
 `
 
-const toBase64 = file =>
-	new Promise((resolve, reject) => {
-		const reader = new FileReader()
-		reader.readAsDataURL(file)
-		reader.onload = () => resolve(reader.result)
-		reader.onerror = error => reject(error)
-	})
-
 const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 	const [fileList, setFile] = useState([])
 	const [uploadFile] = useMutation(UPLOAD_FILE, {
@@ -34,7 +26,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 			setJobId(uploadFile)
 			setFile([])
 			setMessage({})
-		}
+		},
 	})
 	const [modal, setModal] = useState(false)
 
@@ -54,24 +46,36 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 		setModal(!modal)
 	}
 
-	const handleFileUpload = async rowCount => {
+	const handleFileUpload = async ({ key, url }) => {
 		try {
 			toggleModal()
+
 			if (!fileList.length) return
 			const file = fileList[0].originFileObj
 			const fileSize = file.size
-			const base64 = await toBase64(file)
+			setMessage({
+				message: [
+					'Uploading your file to AWS....',
+					<Spin style={{ marginLeft: '10px' }} />,
+				],
+				type: 'info',
+			})
+			await fetch(url, {
+				method: 'PUT',
+				body: file,
+			})
+
 			await uploadFile({
 				variables: {
 					clientId: inputs.client,
+					advitoApplicationId: inputs.application,
 					sourceId: inputs.source,
 					dataStartDate: inputs.fileStartDate,
 					dataEndDate: inputs.fileEndDate,
 					fileName: file.name,
-					rowCount,
 					fileSize,
-					base64
-				}
+					key,
+				},
 			})
 		} catch (e) {
 			toggleModal()
@@ -79,7 +83,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 		}
 	}
 
-	const onFileChange = async info => {
+	const onFileChange = async (info) => {
 		if (info.file.status === 'removed') {
 			setFile([])
 		} else {
@@ -97,7 +101,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 					multiple={false}
 					customRequest={dummyRequest}
 					showUploadList={{
-						showDownloadIcon: false
+						showDownloadIcon: false,
 					}}
 					onChange={onFileChange}
 					fileList={fileList}
@@ -117,7 +121,7 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 				visible={modal}
 				file={fileList.length > 0 ? fileList[0].originFileObj : null}
 				onCancel={() => toggleModal()}
-				onOk={handleFileUpload}
+				uploadFile={handleFileUpload}
 				selectedClient={inputs.client}
 			/>
 		</>

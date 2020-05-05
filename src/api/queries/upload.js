@@ -17,3 +17,12 @@ export const GET_JOB = gql`
 		}
 	}
 `
+
+export const GET_PRESIGNED_UPLOAD_URL = gql`
+	query getPresignedUploadUrl($fileName: String!) {
+		getPresignedUploadUrl(fileName: $fileName) {
+			key
+			url
+		}
+	}
+`
