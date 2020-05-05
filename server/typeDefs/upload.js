@@ -13,8 +13,14 @@ type Job {
   timestamp: String
 }
 
+type S3 {
+  key: String
+  url: String
+}
+
 extend type Query {
-  getJob(jobId: Int!): Job
+  getJob(jobId: Int!): Job @auth
+  getPresignedUploadUrl(fileName: String!): S3 @auth
 }
 
 extend type Mutation {
@@ -26,7 +32,7 @@ extend type Mutation {
     dataEndDate: Date!
     fileName: String!
     fileSize: Int!
-    base64: String!
-  ): Int
+    key: String!
+  ): Int @auth
 }
 `
