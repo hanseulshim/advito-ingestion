@@ -7,7 +7,7 @@
 		"deploy:stage": "sls deploy -s stage --aws-profile advito",
 		"deploy:dev": "sls deploy -s dev --aws-profile advito",
 		"deploy:prod": "sls deploy -s prod --aws-profile advito",
-		"deploy:all": "yarn deploy:dev && yarn deploy:staging && yarn deploy:production"
+		"deploy:all": "yarn deploy:dev && yarn deploy:stage && yarn deploy:production"
 	},
 	"author": "",
 	"license": "ISC",
