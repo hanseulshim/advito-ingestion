@@ -5,17 +5,16 @@ import application from './application'
 import upload from './upload'
 
 export const typeDefs = gql`
-  scalar Date
-  scalar Upload
-  directive @auth on FIELD_DEFINITION
-  ${user}
-  ${client}
-  ${application}
-  ${upload}
-  type Query {
-    _empty: String
-  }
-  type Mutation {
-    _empty: String
-  }
+	scalar Date
+	directive @auth on FIELD_DEFINITION
+	${user}
+	${client}
+	${application}
+	${upload}
+	type Query {
+		_empty: String
+	}
+	type Mutation {
+		_empty: String
+	}
 `
