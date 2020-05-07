@@ -12,7 +12,9 @@ AWS.config.update({
 	accessKeyId: ACCESS_KEY_ID,
 	secretAccessKey: SECRET_ACCESS_KEY
 })
-const s3 = new AWS.S3()
+const s3 = new AWS.S3({
+	region: process.env.ENVIRONMENT === 'PROD' ? 'us-west-1' : 'us-east-2'
+})
 
 export default {
 	Query: {

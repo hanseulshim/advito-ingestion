@@ -24,16 +24,16 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 					const result = await client.query({
 						query: GET_PRESIGNED_UPLOAD_URL,
 						variables: {
-							fileName: file.name,
+							fileName: file.name
 						},
 						fetchPolicy: 'network-only',
 						//fetch a POST with
-						onError: (e) => console.log(e),
+						onError: (e) => console.log(e)
 					})
 					updateSignedUrl(result.data.getPresignedUploadUrl)
 					setError('')
 				} catch (e) {
-					setError(e)
+					setError('Something went wrong with the file upload.')
 					setMessage('')
 					updateSignedUrl(null)
 				}
@@ -94,9 +94,9 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 			visible={visible}
 			okButtonProps={{
 				style: {
-					display: !file || parsingError || !signedUrl ? 'none' : '',
+					display: !file || parsingError || !signedUrl ? 'none' : ''
 				},
-				type: 'primary',
+				type: 'primary'
 			}}
 			cancelButtonProps={{ type: 'default' }}
 			onOk={() => uploadFile(signedUrl)}
