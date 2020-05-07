@@ -87,9 +87,10 @@ class Validator:
                 for x in range(row_range):
                     current_range = x * row_const
                     if environment == 'PROD':
-                        s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin, Key=object_key)
+                        new_key = 'upload/' + object_key
+                        s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=new_key)
                         s3.delete_object(Bucket=bucket_dest, Key=object_key)
-                        job.file_name = 'upload/' + object_key
+                        job.file_name = new_key
                     if advito_application_id == 1:
                         function_name = 'advito-ingestion-dev-ingest-hotel-template'
                         if environment == 'PROD':
@@ -287,5 +288,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='18503', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
+    Validator().validate(job_ingestion_id='177', bucket_origin='advito-pci', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
     # Validator().validate(job_ingestion_id='18408')
