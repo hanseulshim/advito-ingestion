@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk'
-import { JobIngestion } from '../models'
 import axios from 'axios'
+import { JobIngestion } from '../models'
 const {
 	ACCESS_KEY_ID,
 	SECRET_ACCESS_KEY,

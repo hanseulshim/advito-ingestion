@@ -1,12 +1,17 @@
-import traceback
-import pandas as pd
-import boto3
 import io
+import time
+import traceback
 from datetime import datetime
+
+import boto3
+import pandas as pd
 from sqlalchemy.orm.exc import NoResultFound
 
-from db.db import HotelSession, AdvitoSession
-from db.advito_models import AdvitoApplicationTemplate, AdvitoApplicationTemplateSource, AdvitoApplicationTemplateColumn, Currency, JobIngestion
+from db.advito_models import (AdvitoApplicationTemplate,
+                              AdvitoApplicationTemplateColumn,
+                              AdvitoApplicationTemplateSource, Currency,
+                              JobIngestion)
+from db.db import AdvitoSession, HotelSession
 
 
 class Validator:
@@ -54,7 +59,11 @@ class Validator:
             obj = s3.get_object(Bucket=bucket_origin, Key=object_key)
             data = obj['Body'].read()
             
-            df = pd.read_excel(io.BytesIO(data), encoding='utf-8')
+            print('Running validation for id: ' + str(job.id))
+            start_read_time = time.time()
+            df = pd.read_excel(io.BytesIO(data), encoding='utf-8',)
+            end_read_time = time.time() - start_read_time
+            start_validate_time = time.time()
             # df = pd.read_excel('error.xlsx', encoding='utf-8')
 
             progress_step = 100 / len(self.validators)
@@ -99,7 +108,7 @@ class Validator:
                             function_name = 'advito-ingestion-staging-ingest-hotel-template'
                         # print(json.dumps(df.iloc[current_range:current_range + row_const - 1].to_json(orient='records')))
                         end = current_range + len(df.iloc[current_range:current_range + row_const])
-                        print('Invoking for rows: ', current_range, end)
+                        # print('Invoking for rows: ', current_range, end)
                         lambda_client.invoke(
                             FunctionName=function_name,
                             InvocationType='Event',
@@ -108,7 +117,9 @@ class Validator:
             else:
                 job.job_status = 'error'
                 job.job_note = json.dumps(self.validation_errors)
-            print('Done')
+            print(f"--- {end_read_time / 60} minutes to read file ---")
+            print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
+            print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
             self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
@@ -288,5 +299,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='177', bucket_origin='advito-pci', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
+    Validator().validate(job_ingestion_id='18537', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
     # Validator().validate(job_ingestion_id='18408')

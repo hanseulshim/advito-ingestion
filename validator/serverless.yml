@@ -4,9 +4,9 @@ provider:
   name: aws
   runtime: python3.6
   region: us-east-2
-#  stage: dev
-#  memorySize: 2048
-#  versionFunctions: false
+  #  stage: dev
+  memorySize: 3008
+  #  versionFunctions: false
   vpc:
     securityGroupIds:
       - sg-09b7d9888c893594d
@@ -36,7 +36,6 @@ functions:
               - Content-Type
               - Pragma
               - Cache-Control
-
 
 plugins:
   - serverless-python-requirements
