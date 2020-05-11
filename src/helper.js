@@ -1,7 +1,7 @@
-import history from './history'
-import moment from 'moment'
 import isEmpty from 'lodash.isempty'
+import moment from 'moment'
 import queryString from 'query-string'
+import history from './history'
 
 export const formatDate = (date) => {
 	return date ? moment(date).format('MMMM DD, YYYY') : ''
@@ -57,7 +57,7 @@ export const removeUser = () => {
 export const getApi = () => {
 	const REACT_APP_STAGE = process.env.REACT_APP_STAGE
 	return REACT_APP_STAGE === 'dev'
-		? 'https://sp0owoqyr0.execute-api.us-east-2.amazonaws.com/dev/graphql'
+		? 'https://sczfghpxjg.execute-api.us-east-2.amazonaws.com/dev/graphql'
 		: REACT_APP_STAGE === 'alpha'
 		? 'https://8t09b8y0q4.execute-api.us-east-2.amazonaws.com/alpha/graphql'
 		: REACT_APP_STAGE === 'beta'
