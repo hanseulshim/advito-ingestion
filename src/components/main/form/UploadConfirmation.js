@@ -24,16 +24,16 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 					const result = await client.query({
 						query: GET_PRESIGNED_UPLOAD_URL,
 						variables: {
-							fileName: file.name
+							fileName: file.name,
 						},
 						fetchPolicy: 'network-only',
 						//fetch a POST with
-						onError: (e) => console.log(e)
+						onError: (e) => console.log(e),
 					})
 					updateSignedUrl(result.data.getPresignedUploadUrl)
 					setError('')
 				} catch (e) {
-					setError('Something went wrong with the file upload.')
+					setError(e)
 					setMessage('')
 					updateSignedUrl(null)
 				}
@@ -63,7 +63,13 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 					reject(
 						'The file you are trying to upload has multiple worksheets. This is not allowed.'
 					)
-				} else if (file.size > 10000000) {
+				} else if (file.size > 30000000) {
+					reject(
+						`This file is ${bytesToMegaBytes(file.size).toFixed(
+							2
+						)} MB, which exceeds the maximum size for upload.`
+					)
+				} else if (file.size > 10000000 && file.size < 30000000) {
 					resolve(`You are about to upload ${file.name} with 
 					${bytesToMegaBytes(file.size).toFixed(2)} MB for client
 					${getClientName(props.selectedClient)}. Do you wish to continue?`)
@@ -94,9 +100,9 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 			visible={visible}
 			okButtonProps={{
 				style: {
-					display: !file || parsingError || !signedUrl ? 'none' : ''
+					display: !file || parsingError || !signedUrl ? 'none' : '',
 				},
-				type: 'primary'
+				type: 'primary',
 			}}
 			cancelButtonProps={{ type: 'default' }}
 			onOk={() => uploadFile(signedUrl)}
