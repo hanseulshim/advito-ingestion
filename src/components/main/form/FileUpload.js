@@ -14,7 +14,7 @@ const Container = styled.div`
 `
 
 const UploadButton = styled(Button)`
-	margin: 25px 0;
+	margin-top: 2.5px;
 	align-self: center;
 	width: 100px;
 `
@@ -113,6 +113,11 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 						Click or drag file to this area to upload
 					</p>
 				</Dragger>
+				<span
+					style={{ fontSize: '.7em', alignSelf: 'center', marginTop: '20px' }}
+				>
+					Max file size: 30 Mb
+				</span>
 				<UploadButton type="primary" onClick={() => toggleModal()}>
 					Upload
 				</UploadButton>
