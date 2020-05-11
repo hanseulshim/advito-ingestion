@@ -152,7 +152,7 @@ class Validator:
 
         def is_allowed(x):
             import re
-            pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?*@#`&$()/|\-_+'"]+$""") # [ING87] Aded *, but also #@, and +
+            pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?*@#`&$()/|\-_+'"\u2014‐−–]+$""") # [ING87] Aded *, but also #@, and + add checks for all dashes. \u2014 is em-dash character
             match_obj = pattern.match(x)
             return True if match_obj else False
 
