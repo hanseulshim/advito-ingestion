@@ -1,8 +1,10 @@
 # coding: utf-8
-from sqlalchemy import BigInteger, Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, JSON, Numeric, String, Table, Text, UniqueConstraint, text
+from sqlalchemy import (JSON, BigInteger, Boolean, Column, Date, DateTime,
+                        Float, ForeignKey, Integer, Numeric, String, Table,
+                        Text, UniqueConstraint, text)
 from sqlalchemy.dialects.postgresql import TIMESTAMP
-from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -1381,6 +1383,7 @@ class AdvitoApplicationTemplateColumn(Base):
     is_required = Column(Boolean, nullable=False)
     pii_indicator = Column(Boolean)
     description = Column(Text)
+    tag = Column(Text)
     comments = Column(Text)
     created = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
     modified = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
@@ -1401,4 +1404,3 @@ class AdvitoApplicationTemplateSource(Base):
     modified = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
 
     advito_application_template = relationship('AdvitoApplicationTemplate')
-

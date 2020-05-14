@@ -235,7 +235,7 @@ class Validator:
 
             # bad currencies
             s = df[column].dropna().apply(
-                lambda x: True if x.lower() in db_ccs else False)
+                lambda x: True if str(x).lower() in db_ccs else False)
             s = s[s == False]
             if not s.empty:
                 err_list.extend(
@@ -272,14 +272,14 @@ class Validator:
                     for index in s.index.tolist())
         return (False, err_list) if err_list else (True, None)
 
-    @staticmethod
-    def _get_currency_columns():
-        # there is no way to extract columns from db by some specification
-        return ['CurrCode',
-                'Report Currency',
-                'Currency Code',
-                'Source Currency Code',
-                'Transaction Currency']
+    def _get_currency_columns(self):
+        currency_columns = (
+            self.advito_session.query(AdvitoApplicationTemplateColumn.column_name)
+            .filter(AdvitoApplicationTemplateColumn.tag == 'currency')
+            .distinct()
+            .all()
+        )
+        return [column[0] for column in currency_columns]
 
     def _get_date_columns(self):
         columns = (
@@ -299,5 +299,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='18537', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
+    Validator().validate(job_ingestion_id='18557', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
     # Validator().validate(job_ingestion_id='18408')
