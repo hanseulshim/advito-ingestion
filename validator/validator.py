@@ -48,6 +48,7 @@ class Validator:
                 .filter(JobIngestion.id == job_ingestion_id)
                 .one()
             )
+            print('Running validation for id: ' + str(job.id))
             validation_passed = True
             validation_run = True
 
@@ -59,7 +60,6 @@ class Validator:
             obj = s3.get_object(Bucket=bucket_origin, Key=object_key)
             data = obj['Body'].read()
             
-            print('Running validation for id: ' + str(job.id))
             start_read_time = time.time()
             df = pd.read_excel(io.BytesIO(data), encoding='utf-8',)
             end_read_time = time.time() - start_read_time
