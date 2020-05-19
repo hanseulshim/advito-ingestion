@@ -118,7 +118,14 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 				>
 					Max file size: 30 Mb
 				</span>
-				<UploadButton type="primary" onClick={() => toggleModal()}>
+				<UploadButton
+					type="primary"
+					onClick={() => toggleModal()}
+					disabled={
+						navigator.userAgent.indexOf('MSIE') !== -1 ||
+						navigator.appVersion.indexOf('Trident/') > -1
+					}
+				>
 					Upload
 				</UploadButton>
 			</Container>
