@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Sidebar from 'components/sidebar'
 import Form from './form'
+import { Alert } from 'antd'
 import advitoLogo from 'assets/advitoLogo.png'
 import bcdLogo from 'assets/bcdLogo.png'
 import { useHistory, useLocation } from 'react-router'
@@ -54,6 +55,16 @@ const Main = () => {
 							alt="advito logo"
 						/>
 					</Header>
+					{navigator.userAgent.indexOf('MSIE') !== -1 ||
+						(navigator.appVersion.indexOf('Trident/') > -1 && (
+							<Alert
+								message={
+									'Looks like you are using IE11, this browser is not supported, please use one of the following latest release browsers: Edge, Chrome, Firefox'
+								}
+								type="warning"
+								style={{ marginBottom: '1em' }}
+							/>
+						))}
 					<Form />
 				</FormContainer>
 			</MainContainer>
