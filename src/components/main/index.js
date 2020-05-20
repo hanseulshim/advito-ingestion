@@ -59,7 +59,7 @@ const Main = () => {
 						(navigator.appVersion.indexOf('Trident/') > -1 && (
 							<Alert
 								message={
-									'Looks like you are using IE11, this browser is not supported, please use one of the following latest release browsers: Edge, Chrome, Firefox'
+									'Looks like you are using IE11, this browser is not supported. Please use one of the following latest release browsers: Chrome, Firefox, and Safari.'
 								}
 								type="warning"
 								style={{ marginBottom: '1em' }}
