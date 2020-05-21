@@ -10,7 +10,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from db.advito_models import (AdvitoApplicationTemplate,
                               AdvitoApplicationTemplateColumn,
                               AdvitoApplicationTemplateSource, Currency,
-                              JobIngestion)
+                              JobIngestion, JobIngestionHotel)
 from db.db import AdvitoSession, HotelSession
 
 
@@ -106,13 +106,13 @@ class Validator:
                             function_name = 'advito-ingestion-production-ingest-hotel-template'
                         if environment == 'STAGING':
                             function_name = 'advito-ingestion-staging-ingest-hotel-template'
-                        # print(json.dumps(df.iloc[current_range:current_range + row_const - 1].to_json(orient='records')))
+                        # print(json.dumps(df.iloc[current_range:current_range + row_const - 1].to_json(orient='records', date_format='iso')))
                         end = current_range + len(df.iloc[current_range:current_range + row_const])
                         # print('Invoking for rows: ', current_range, end)
                         lambda_client.invoke(
                             FunctionName=function_name,
                             InvocationType='Event',
-                            Payload=json.dumps({'jobIngestionId': job_ingestion_id, 'data': df.iloc[current_range:current_range + row_const].to_json(orient='records'), 'start': current_range, 'end': end})
+                            Payload=json.dumps({'jobIngestionId': job_ingestion_id, 'data': df.iloc[current_range:current_range + row_const].to_json(orient='records', date_format='iso'), 'start': current_range, 'end': end})
                         )
             else:
                 job.job_status = 'error'
@@ -120,6 +120,7 @@ class Validator:
             print(f"--- {end_read_time / 60} minutes to read file ---")
             print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
             print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
+            self.advito_session.add(JobIngestionHotel(job_ingestion_id = job.id, is_dpm = False, is_sourcing = False))
             self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
@@ -299,5 +300,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='18557', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
+    Validator().validate(job_ingestion_id='327', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
     # Validator().validate(job_ingestion_id='18408')

@@ -1316,6 +1316,35 @@ class JobIngestion(Base):
     client = relationship('Client')
 
 
+class JobIngestionHotel(Base):
+    __tablename__ = 'job_ingestion_hotel'
+
+    id = Column(BigInteger, primary_key=True)
+    job_ingestion_id= Column(ForeignKey('job_ingestion.id'), nullable=False)
+    ingestion_type= Column(String(255))
+    currency_ingested= Column(String(8))
+    room_nights_total= Column(Integer)
+    original_unmatched_count= Column(Integer)
+    original_unmatched_spend_usd= Column(Numeric(16, 4))
+    unmatched_count= Column(Integer)
+    unmatched_spend= Column(Numeric(16, 4))
+    unmatched_spend_usd= Column(Numeric(16, 4))
+    matched_count= Column(Integer)
+    matched_spend= Column(Numeric(16, 4))
+    matched_spend_usd= Column(Numeric(16, 4))
+    ingestion_status= Column(String(255))
+    is_dpm= Column(Boolean, nullable=False)
+    status_dpm= Column(String(255))
+    date_status_dpm= Column(TIMESTAMP(precision=6))
+    is_sourcing= Column(Boolean, nullable=False)
+    status_sourcing= Column(String(255))
+    date_status_sourcing= Column(TIMESTAMP(precision=6))
+    ingestion_note= Column(Text)
+    created = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+    modified = Column(TIMESTAMP(precision=6), nullable=False, server_default=text("now()"))
+
+    job_ingestion = relationship('JobIngestion')
+
 
 class AdvitoUserSessionLog(Base):
     __tablename__ = 'advito_user_session_log'
