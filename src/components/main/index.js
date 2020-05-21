@@ -44,6 +44,12 @@ const Main = () => {
 			setBcd(false)
 		}
 	}, [params])
+
+	const blockedBrowser =
+		navigator.userAgent.indexOf('MSIE') !== -1 ||
+		navigator.appVersion.indexOf('Trident/') > -1 ||
+		navigator.userAgent.indexOf('Edge') !== -1
+
 	return (
 		<>
 			<MainContainer>
@@ -55,16 +61,15 @@ const Main = () => {
 							alt="advito logo"
 						/>
 					</Header>
-					{navigator.userAgent.indexOf('MSIE') !== -1 ||
-						(navigator.appVersion.indexOf('Trident/') > -1 && (
-							<Alert
-								message={
-									'Looks like you are using IE11, this browser is not supported. Please use one of the following latest release browsers: Chrome, Firefox, and Safari.'
-								}
-								type="warning"
-								style={{ marginBottom: '1em' }}
-							/>
-						))}
+					{blockedBrowser && (
+						<Alert
+							message={
+								'Looks like you are using IE11 or Edge, these browsers are not supported. Please use one of the following latest release browsers: Chrome, Firefox, or Safari.'
+							}
+							type="warning"
+							style={{ marginBottom: '1em' }}
+						/>
+					)}
 					<Form />
 				</FormContainer>
 			</MainContainer>

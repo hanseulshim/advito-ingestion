@@ -123,7 +123,8 @@ const FileUpload = ({ inputs, disabled, setMessage, setJobId }) => {
 					onClick={() => toggleModal()}
 					disabled={
 						navigator.userAgent.indexOf('MSIE') !== -1 ||
-						navigator.appVersion.indexOf('Trident/') > -1
+						navigator.appVersion.indexOf('Trident/') > -1 ||
+						navigator.userAgent.indexOf('Edge') !== -1
 					}
 				>
 					Upload
