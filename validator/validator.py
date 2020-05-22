@@ -61,7 +61,8 @@ class Validator:
             data = obj['Body'].read()
             
             start_read_time = time.time()
-            df = pd.read_excel(io.BytesIO(data), encoding='utf-8',)
+            df = pd.read_excel(io.BytesIO(data), encoding='utf-8')
+            df.columns = map(str.lower, df.columns)
             end_read_time = time.time() - start_read_time
             start_validate_time = time.time()
             # df = pd.read_excel('error.xlsx', encoding='utf-8')
@@ -187,7 +188,7 @@ class Validator:
         df_columns = df.columns.tolist()
         # get columns to check from db
         columns_to_check = self._get_date_columns()
-        columns = [col for col in columns_to_check if col in df_columns]
+        columns = [col.lower() for col in columns_to_check if col.lower() in df_columns]
         print('\tColumns to check: {}'.format(columns))
 
         err_list = list()
@@ -220,7 +221,7 @@ class Validator:
         df_columns = df.columns.tolist()
         # get columns to check from db
         columns_to_check = self._get_currency_columns()
-        columns = [col for col in columns_to_check if col in df_columns]
+        columns = [col.lower() for col in columns_to_check if col.lower() in df_columns]
         print('\tColumns to check: {}'.format(columns))
 
         db_ccs = self._get_currency_codes()
@@ -280,7 +281,7 @@ class Validator:
             .distinct()
             .all()
         )
-        return [column[0] for column in currency_columns]
+        return [column[0].lower() for column in currency_columns]
 
     def _get_date_columns(self):
         columns = (
@@ -289,7 +290,7 @@ class Validator:
             .distinct()
             .all()
         )
-        return [column[0] for column in columns]
+        return [column[0].lower() for column in columns]
 
     def _get_currency_codes(self):
         currency_codes = (
@@ -300,5 +301,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='327', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
+    Validator().validate(job_ingestion_id='332', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
     # Validator().validate(job_ingestion_id='18408')
