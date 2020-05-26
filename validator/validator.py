@@ -96,11 +96,11 @@ class Validator:
                 row_range = int(row_count / row_const) + (row_count % row_const > 0)
                 for x in range(row_range):
                     current_range = x * row_const
-                    if environment == 'PROD':
-                        new_key = 'upload/' + object_key
-                        s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=new_key)
-                        s3.delete_object(Bucket=bucket_dest, Key=object_key)
-                        job.file_name = new_key
+                    # if environment == 'PROD':
+                    #     new_key = 'upload/' + object_key
+                    #     s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=new_key)
+                    #     s3.delete_object(Bucket=bucket_dest, Key=object_key)
+                    #     job.file_name = new_key
                     if advito_application_id == 1:
                         function_name = 'advito-ingestion-dev-ingest-hotel-template'
                         if environment == 'PROD':
@@ -110,17 +110,21 @@ class Validator:
                         # print(json.dumps(df.iloc[current_range:current_range + row_const - 1].to_json(orient='records', date_format='iso')))
                         end = current_range + len(df.iloc[current_range:current_range + row_const])
                         # print('Invoking for rows: ', current_range, end)
+                        if row_count == end:
+                            print('Insert complete for job ingestion: ', job.id)
+                        # print('job_ingestion_id', job_ingestion_id)
                         lambda_client.invoke(
                             FunctionName=function_name,
                             InvocationType='Event',
-                            Payload=json.dumps({'jobIngestionId': job_ingestion_id, 'data': df.iloc[current_range:current_range + row_const].to_json(orient='records', date_format='iso'), 'start': current_range, 'end': end})
+                            Payload=json.dumps({'jobIngestionId': job.id, 'data': df.iloc[current_range:current_range + row_const].to_json(orient='records', date_format='iso'), 'start': current_range, 'end': end, 'final': row_count == end})
                         )
             else:
+                print('There was an error in job ingestion id: ', job.id)
                 job.job_status = 'error'
                 job.job_note = json.dumps(self.validation_errors)
-            print(f"--- {end_read_time / 60} minutes to read file ---")
-            print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
-            print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
+            # print(f"--- {end_read_time / 60} minutes to read file ---")
+            # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
+            # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
             self.advito_session.add(JobIngestionHotel(job_ingestion_id = job.id, is_dpm = False, is_sourcing = False))
             self.advito_session.commit()
         except NoResultFound:
@@ -301,5 +305,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='332', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
+    Validator().validate(job_ingestion_id='342', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
     # Validator().validate(job_ingestion_id='18408')
