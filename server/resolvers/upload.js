@@ -95,7 +95,7 @@ export default {
 						? 'https://0rihemrgij.execute-api.us-east-2.amazonaws.com/prod/validation'
 						: process.env.ENVIRONMENT === 'STAGING'
 						? 'https://fynpwsijxl.execute-api.us-east-2.amazonaws.com/stage/validation'
-						: 'https://cjsk604dw5.execute-api.us-east-2.amazonaws.com/dev/validation',
+						: 'https://b1ojkecek7.execute-api.us-east-2.amazonaws.com/dev/validation',
 					{
 						job_ingestion_id: job.id,
 						bucket_origin: BUCKET_ORIGIN,
