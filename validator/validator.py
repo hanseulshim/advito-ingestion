@@ -118,6 +118,7 @@ class Validator:
                             InvocationType='Event',
                             Payload=json.dumps({'jobIngestionId': job.id, 'data': df.iloc[current_range:current_range + row_const].to_json(orient='records', date_format='iso'), 'start': current_range, 'end': end, 'final': row_count == end})
                         )
+                self.advito_session.add(JobIngestionHotel(job_ingestion_id = job.id, is_dpm = False, is_sourcing = False))
             else:
                 print('There was an error in job ingestion id: ', job.id)
                 job.job_status = 'error'
@@ -125,7 +126,6 @@ class Validator:
             # print(f"--- {end_read_time / 60} minutes to read file ---")
             # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
             # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
-            self.advito_session.add(JobIngestionHotel(job_ingestion_id = job.id, is_dpm = False, is_sourcing = False))
             self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
