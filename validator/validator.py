@@ -10,18 +10,19 @@ from sqlalchemy.orm.exc import NoResultFound
 from db.advito_models import (AdvitoApplicationTemplate,
                               AdvitoApplicationTemplateColumn,
                               AdvitoApplicationTemplateSource, Currency,
-                              JobIngestion, JobIngestionHotel)
+                              JobIngestion, JobIngestionHotel,
+                              GeoState)
 from db.db import AdvitoSession, HotelSession
 
 
 class Validator:
-    
     # TODO: Add other validations here
     validators = {
         'incorrect_characters_validation': 'incorrectCharacters',
         'incorrect_dates_validation': 'incorrectDates',
         'source_currency_code_validation': 'sourceCurrencyCode',
         'unmasked_credit_card_data_validation': 'unmaskedCreditCardData',
+        'state_validation': 'stateValidation'
     }
 
     def __init__(self):
@@ -32,6 +33,9 @@ class Validator:
            'incorrectDates': list(),
            'sourceCurrencyCode': list(),
            'unmaskedCreditCardData': list(),
+           'stateShouldBeBlank': list(),
+           'stateMissing': list(),
+           'stateInvalid': list()
         }
 
     def __del__(self):
@@ -40,7 +44,6 @@ class Validator:
 
     def validate(self, job_ingestion_id, bucket_origin, bucket_dest, environment, advito_application_id):
     # def validate(self, job_ingestion_id):
-        
         try:
             # 0. Get job, template and column information
             job = (
@@ -72,7 +75,12 @@ class Validator:
                 validation_run, validation_error = getattr(self, validator)(df)
                 if validation_error:
                     validation_passed = False
-                    self.validation_errors[output].extend(validation_error)
+                    if validator == 'state_validation':
+                        for key in validation_error:
+                            if validation_error[key]:
+                                self.validation_errors[key].extend(validation_error[key])
+                    else:
+                        self.validation_errors[output].extend(validation_error)
                 # TODO: update job_note with progress 0-100
                 job_progress_percentage = str(int((i + 1) * progress_step))
                 job.job_note = job_progress_percentage
@@ -118,6 +126,7 @@ class Validator:
                             InvocationType='Event',
                             Payload=json.dumps({'jobIngestionId': job.id, 'data': df.iloc[current_range:current_range + row_const].to_json(orient='records', date_format='iso'), 'start': current_range, 'end': end, 'final': row_count == end})
                         )
+                self.advito_session.add(JobIngestionHotel(job_ingestion_id = job.id, is_dpm = False, is_sourcing = False))
             else:
                 print('There was an error in job ingestion id: ', job.id)
                 job.job_status = 'error'
@@ -125,7 +134,6 @@ class Validator:
             # print(f"--- {end_read_time / 60} minutes to read file ---")
             # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
             # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
-            self.advito_session.add(JobIngestionHotel(job_ingestion_id = job.id, is_dpm = False, is_sourcing = False))
             self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
@@ -216,7 +224,6 @@ class Validator:
 
     def source_currency_code_validation(self, data):
         """
-
         :param data:    pd.Dataframe
         :return:
         """
@@ -248,6 +255,61 @@ class Validator:
                     'Row {}, Column {}'.format(str(index + 2), column)
                     for index in s.index.tolist())
         return (False, err_list) if err_list else (True, None)
+
+    def state_validation(self, data):
+        print('State Validation')
+        # Three error scenarios
+        err_missing_state = list()
+        err_invalid_state = list()
+        err_shouldnt_be_here = list()
+
+        us_countries = ['united states', 'us']
+        ca_countries = ['canada', 'ca']
+        required_state_countries = us_countries + ca_countries
+        
+        df = data.copy()
+        df_columns = df.columns.tolist()
+        state_columns, country_columns, country_code_columns = self._get_state_columns()
+        # Only consider state columns that appear in this DF
+        for column_list in [state_columns, country_columns, country_code_columns]:
+            for column in column_list:
+                if column not in df_columns:
+                    column_list.remove(column)
+        
+        # Should end up with a single column for each
+        column_state, column_country, column_country_code = state_columns[0], country_columns[0], country_code_columns[0]
+        canada_list, us_list = self._get_state_codes()
+
+        for ind in df.index:
+            if pd.isna(df[column_state][ind]):
+                # 1. Blank value. Is that okay?
+                if (df[column_country][ind].lower() in required_state_countries
+                        or df[column_country_code][ind] in required_state_countries):
+                    err_missing_state.append(f"Row {ind+2}, {column_state.title()}")
+            else:
+                # 2. Not a Blank value. Is that okay?
+                if (df[column_country][ind].lower() in required_state_countries
+                    or df[column_country_code][ind] in required_state_countries):
+                    # 3. Should have a value, is it correct?
+                    if df[column_country][ind].lower() in us_countries:
+                        if df[column_state][ind].lower() not in us_list:
+                            err_invalid_state.append(f"Row {ind+2}, {column_state.title()}")
+                    else:
+                       if df[column_state][ind].lower() not in canada_list:
+                            err_invalid_state.append(f"Row {ind+2}, {column_state.title()}") 
+                else:
+                    # 2. No! This country should NOT have a state value
+                    err_shouldnt_be_here.append(f"Row {ind+2}, {column_state.title()}")
+
+        if err_shouldnt_be_here or err_missing_state or err_invalid_state:
+            return(False, {
+                            'stateShouldBeBlank': err_shouldnt_be_here, 
+                            'stateMissing': err_missing_state,
+                            'stateInvalid': err_invalid_state
+                            })
+        else:
+            return(True, None)
+
 
     @staticmethod
     def unmasked_credit_card_data_validation(data):
@@ -287,6 +349,35 @@ class Validator:
         )
         return [column[0].lower() for column in currency_columns]
 
+    def _get_state_codes(self):
+        state_code_list = []
+        geo_country_ids = [34, 203]     # 34: CA, 203: US
+
+        for geo_country_id in geo_country_ids:
+            states = (
+                self.advito_session.query(GeoState)
+                .filter(GeoState.geo_country_id == geo_country_id)
+                .all()
+            )
+            state_code_list.append([state.state_code.lower() for state in states])
+
+        return state_code_list[0], state_code_list[1]
+
+    def _get_state_columns(self):
+        column_dict = {}
+        tags = ['hotel state', 'hotel country', 'hotel country code']
+
+        for tag in tags:
+            columns = (
+                self.advito_session.query(AdvitoApplicationTemplateColumn.column_name)
+                .filter(AdvitoApplicationTemplateColumn.tag == tag)
+                .distinct()
+                .all()
+            )
+            column_dict[tag] = [column[0].lower() for column in columns]
+        
+        return column_dict['hotel state'], column_dict['hotel country'], column_dict['hotel country code']
+
     def _get_date_columns(self):
         columns = (
             self.advito_session.query(AdvitoApplicationTemplateColumn.column_name)
@@ -305,5 +396,5 @@ class Validator:
 
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='342', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
-    # Validator().validate(job_ingestion_id='18408')
+    Validator().validate(job_ingestion_id='969', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
+
