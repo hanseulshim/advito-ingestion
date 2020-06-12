@@ -51,6 +51,15 @@ const getSectionText = (key, text) => {
 			</Title>
 		)
 	}
+	if (key === 'stateShouldBeBlank') {
+		return <Title>The State value should be blank ({text})</Title>
+	}
+	if (key === 'stateMissing') {
+		return <Title>The State value is missing ({text})</Title>
+	}
+	if (key === 'stateInvalid') {
+		return <Title>Invalid two letter State Code ({text})</Title>
+	}
 }
 
 const getSectionHeader = (key, count) => {
@@ -70,6 +79,27 @@ const getSectionHeader = (key, count) => {
 	if (key === 'incorrectDates') {
 		return <Title key={key}>Incorrect date format ({count} errors)</Title>
 	}
+	if (key === 'stateShouldBeBlank') {
+		return (
+			<Title key={key}>
+				Incorrect State value, State should be blank ({count} errors)
+			</Title>
+		)
+	}
+	if (key === 'stateMissing') {
+		return (
+			<Title key={key}>
+				Incorrect State value, State is missing ({count} errors)
+			</Title>
+		)
+	}
+	if (key === 'stateInvalid') {
+		return (
+			<Title key={key}>
+				Incorrect State value, State code is invalid ({count} errors)
+			</Title>
+		)
+	}
 }
 
 const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
@@ -77,7 +107,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 		variables: { jobId },
 		skip: !jobId,
 		pollInterval: 3000,
-		fetchPolicy: 'network-only',
+		fetchPolicy: 'network-only'
 	})
 	if (loading) return <SpinLoader />
 	if (error) return <ErrorMessage error={error} />
@@ -90,7 +120,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 		jobNote,
 		processingStartTimestamp,
 		templateName,
-		applicationName,
+		applicationName
 	} = data.getJob
 	if (isComplete) {
 		stopPolling()
@@ -103,7 +133,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 						contained {countRows} rows and has the job name {jobName}
 					</MessageHeading>
 				),
-				type: 'success',
+				type: 'success'
 			})
 		} else if (jobStatus === 'error') {
 			const json = JSON.parse(jobNote)
@@ -150,13 +180,22 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 					if (key === 'incorrectDates') {
 						return `Incorrect date format (${count} errors)`
 					}
+					if (key === 'stateShouldBeBlank') {
+						return `Incorrect State value, State should be blank (${count} errors)`
+					}
+					if (key === 'stateMissing') {
+						return `Incorrect State value, State is missing (${count} errors)`
+					}
+					if (key === 'stateInvalid') {
+						return `Incorrect State value, State code is invalid (${count} errors)`
+					}
 				}
 				const formattedKey = formatKey(key, count)
 
 				if (count > 0) {
 					emailArray.push(
 						` %0D%0A ${formattedKey} : ${[
-							value.map((v) => v.replace(',', ' ')).join(', '),
+							value.map((v) => v.replace(',', ' ')).join(', ')
 						]}` + `%0D%0A`
 					)
 				}
@@ -201,7 +240,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 						</div>
 					</>
 				),
-				type: 'error',
+				type: 'error'
 			})
 		} else {
 			const getMailTo = () => {
@@ -236,7 +275,7 @@ const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 						</div>
 					</>
 				),
-				type: 'error',
+				type: 'error'
 			})
 		}
 		setJobId(null)
