@@ -10,8 +10,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from db.advito_models import (AdvitoApplicationTemplate,
                               AdvitoApplicationTemplateColumn,
                               AdvitoApplicationTemplateSource, Currency,
-                              JobIngestion, JobIngestionHotel,
-                              GeoState)
+                              GeoState, JobIngestion, JobIngestionHotel)
 from db.db import AdvitoSession, HotelSession
 
 
@@ -275,6 +274,7 @@ class Validator:
             for column in column_list:
                 if column not in df_columns:
                     column_list.remove(column)
+        print('\tColumns to check: [\'{}\', \'{}\', \'{}\']'.format(state_columns[0], country_columns[0], country_code_columns[0]))
         
         # Should end up with a single column for each
         column_state, column_country, column_country_code = state_columns[0], country_columns[0], country_code_columns[0]
@@ -397,4 +397,3 @@ class Validator:
 
 if __name__ == '__main__':
     Validator().validate(job_ingestion_id='969', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
-
