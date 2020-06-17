@@ -59,7 +59,7 @@ export const getSectionText = (key, text) => {
 		return <Title>Invalid spend amounts({text})</Title>
 	}
 	if (key === 'fileExists') {
-		return <Title>File has already been ignested({text})</Title>
+		return <Title>File has already been ingested({text})</Title>
 	}
 }
 
