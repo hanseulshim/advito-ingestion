@@ -1,4 +1,5 @@
 import io
+import re
 import time
 import traceback
 from datetime import datetime
@@ -24,7 +25,9 @@ class Validator:
         'unmasked_credit_card_data_validation': 'unmaskedCreditCardData',
         'state_validation': 'stateValidation',
         'data_type_validation': 'dataType',
-        'city_phone_validation': 'invalidCityName'
+        'city_phone_validation': 'invalidCityName',
+        'checkout_date_validation': 'invalidCheckout',
+        'spend_validation': 'invalidSpend'
     }
 
     def __init__(self):
@@ -34,6 +37,7 @@ class Validator:
         self.types = {}
         self.validation_errors = {
            'incorrectTemplate': list(),
+           'fileExists': list(),
            'missingRequired': list(),
            'incorrectCharacters': list(),
            'incorrectDates': list(),
@@ -43,7 +47,9 @@ class Validator:
            'stateMissing': list(),
            'stateInvalid': list(),
            'dataType': list(),
-           'invalidCityName': list()
+           'invalidCityName': list(),
+           'invalidCheckout': list(),
+           'invalidSpend': list()
         }
         self.job = None
 
@@ -79,32 +85,36 @@ class Validator:
             end_read_time = time.time() - start_read_time
             start_validate_time = time.time()
 
-            # 1. Before main validation loop, check template format.
-            #    If the template isn't right don't continue with the rest
-            validation_passed, err_list, required, types = self.incorrect_template_format(df)
+            # 1. Before main validation loop, check if a duplicate was already loaded?
+            validation_passed, err_list = self.duplicate_file_check()
             if not validation_passed:
-                self.validation_errors['incorrectTemplate'] = err_list
+                self.validation_errors['fileExists'] = err_list
             else:
-                # Only run main loop if we have the right template
-                self.required = required
-                self.types = types
+                # 2. Not a duplicate. See if the template was valid.
+                validation_passed, err_list, required, types = self.incorrect_template_format(df)
+                if not validation_passed:
+                    self.validation_errors['incorrectTemplate'] = err_list
+                else:
+                    # Only run main loop if we have the right template
+                    self.required = required
+                    self.types = types
 
-                progress_step = 100 / len(self.validators)
-                for i, (validator, output) in enumerate(self.validators.items()):
-                    validation_run, validation_error = getattr(self, validator)(df)
-                    if validation_error:
-                        validation_passed = False
-                        if validator == 'state_validation':
-                            for key in validation_error:
-                                if validation_error[key]:
-                                    self.validation_errors[key].extend(validation_error[key])
-                        else:
-                            self.validation_errors[output].extend(validation_error)
-                    # TODO: update job_note with progress 0-100
-                    job_progress_percentage = str(int((i + 1) * progress_step))
-                    job.job_note = job_progress_percentage
-                    self.advito_session.commit()
-                
+                    progress_step = 100 / len(self.validators)
+                    for i, (validator, output) in enumerate(self.validators.items()):
+                        validation_run, validation_error = getattr(self, validator)(df)
+                        if validation_error:
+                            validation_passed = False
+                            if validator == 'state_validation':
+                                for key in validation_error:
+                                    if validation_error[key]:
+                                        self.validation_errors[key].extend(validation_error[key])
+                            else:
+                                self.validation_errors[output].extend(validation_error)
+                        # TODO: update job_note with progress 0-100
+                        job_progress_percentage = str(int((i + 1) * progress_step))
+                        job.job_note = job_progress_percentage
+                        self.advito_session.commit()
+                    
             # update job
             print(f"\n\n{self.validation_errors}\n\n")
             from datetime import datetime
@@ -153,7 +163,7 @@ class Validator:
             # print(f"--- {end_read_time / 60} minutes to read file ---")
             # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
             # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
-            self.advito_session.commit()
+                self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
             if job.id > 0:
@@ -181,8 +191,37 @@ class Validator:
         df_columns = df.columns.tolist()
         err_list = list()
 
-        
-        
+        city_columns = self._get_columns_by_stage_name('city_name')
+        for column in city_columns:
+            if column in df_columns:
+                s = df[column].dropna().apply(self._check_city)
+                s = s[s == False]
+                if not s.empty:
+                    err_list.extend(
+                        'Row {}, Column {}'.format(str(index + 2), column.title())
+                        for index in s.index.tolist()) 
+
+        return (False, err_list) if err_list else (True, None)
+
+    def checkout_date_validation(self, data):
+        print("Checkout Date Validation")
+        df = data.copy()
+        df_columns = df.columns.tolist()
+        err_list = list()
+
+        checkout_columns = self._get_columns_by_stage_name('check_out_date')
+        for column in checkout_columns:
+            if column in df_columns:
+                s = df[column].dropna()
+                row_count = len(s)
+
+                s = s.apply(self._check_checkout_date, args=([self.job.data_end_date]))
+                s = s[s == False]
+                if not s.empty:
+                    err_list.extend(
+                        'Row {}, Column {}'.format(str(index + 2), column.title())
+                        for index in s.index.tolist())
+
         return (False, err_list) if err_list else (True, None)
 
     def data_type_validation(self, data):
@@ -212,6 +251,27 @@ class Validator:
                         for index in s.index.tolist())
         
         return (False, err_list) if err_list else (True, None)
+
+    def duplicate_file_check(self):
+        # See if another file exists with:
+        #   - client_id
+        #   - data_start_date
+        #   - data_end_date
+        #   - advito_application_template_source_id
+        existing_job = (
+            self.advito_session.query(JobIngestion)
+            .filter(JobIngestion.client_id == self.job.client_id)
+            .filter(JobIngestion.data_start_date == self.job.data_start_date)
+            .filter(JobIngestion.data_end_date == self.job.data_end_date)
+            .filter(JobIngestion.advito_application_template_source_id == self.job.advito_application_template_source_id)
+            .filter(JobIngestion.job_status != 'backout')
+            .filter(JobIngestion.id != self.job.id)
+            .first()
+        )
+        if existing_job:
+            return False, ['File has already been Ingested. Backout the current version to load a new one.']
+        else:
+            return True, None
 
     def incorrect_template_format(self, data):
         err_list = list()
@@ -248,9 +308,7 @@ class Validator:
         :param data:    pd.Dataframe
         :return:
         """
-
         def is_allowed(x):
-            import re
             pattern = re.compile(r"""^[a-zA-Z0-9À-ž\s\\,.:;!?*@#`&$()/|\-_+'"\u2014‐−–]+$""") # [ING87] Aded *, but also #@, and + add checks for all dashes. \u2014 is em-dash character
             match_obj = pattern.match(x)
             return True if match_obj else False
@@ -375,6 +433,24 @@ class Validator:
 
         return (False, err_list) if err_list else (True, None)
 
+    def spend_validation(self, data):
+        print('Spend Validation')
+        df = data.copy()
+        df_columns = df.columns.tolist()
+        err_list = list()
+
+        spend_columns = self._get_columns_by_stage_name('room_spend')
+        for column in spend_columns:
+            if column in df_columns:
+                s = df[column].dropna().apply(self._check_spend)
+                s = s[s == False]
+                if not s.empty:
+                    err_list.extend(
+                        'Row {}, Column {}'.format(str(index + 2), column.title())
+                        for index in s.index.tolist()) 
+
+        return (False, err_list) if err_list else (True, None)
+
     def state_validation(self, data):
         print('State Validation')
         # Three error scenarios
@@ -459,6 +535,35 @@ class Validator:
         return (False, err_list) if err_list else (True, None)
 
     @staticmethod
+    def _check_boolean(bool_check):
+        bools = ['y', 'n', 'yes', 'no']
+        ret = True if str(bool_check).lower() in bools else False
+
+        return ret
+
+    @staticmethod
+    def _check_checkout_date(checkout, date_end):
+        MAX_DAYS = 30
+        okay = True
+        try:
+            checkout_date = datetime.strptime(str(checkout), '%Y-%m-%d %H:%M:%S')
+            days_delta = abs((checkout_date.date() - date_end).days)
+            okay = False if days_delta > MAX_DAYS else True
+        except ValueError:
+            # If value isn't a datetime it will be caught in date validation section
+            pass
+        return okay
+
+    @staticmethod
+    def _check_city(city_check):
+        match = False
+        if city_check:
+            pattern = re.compile(r'[a-zA-Z]')
+            match = pattern.match(str(city_check))
+        
+        return True if match else False
+
+    @staticmethod
     def _check_numeric(num_check):
         try:
             num = float(str(num_check))
@@ -468,11 +573,20 @@ class Validator:
         return ret
 
     @staticmethod
-    def _check_boolean(bool_check):
-        bools = ['y', 'n', 't', 'f', 'true', 'false']
-        ret = True if str(bool_check).lower() in bools else False
+    def _check_spend(spend):
+        okay = True
+        try:
+            num = float(str(spend))
+            okay = False if num < 1 else True
+        except ValueError:
+            # Data type errors will be flagged elsewhere
+            pass
+        return okay
 
-        return ret
+
+    
+
+
 
     def _get_all_columns(self, source_id):
         columns_required = []
@@ -500,14 +614,18 @@ class Validator:
 
         return columns, columns_required, columns_type
 
-    def _get_city_columns(self):
-        city_columns = (
+    def _get_columns_by_stage_name(self, stage_column_name):
+        results = []
+        columns = (
             self.advito_session.query(AdvitoApplicationTemplateColumn.column_name)
-            .filter(AdvitoApplicationTemplateColumn.stage_column_name == 'city_name')
+            .filter(AdvitoApplicationTemplateColumn.stage_column_name == stage_column_name)
             .distinct()
             .all()
         )
-        cities = [column[0].lower() for column in city_columns]
+        for column in columns:
+            if column[0].lower() not in results:
+                results.append(column[0].lower())
+        return results
 
     def _get_currency_codes(self):
         currency_codes = (
@@ -589,4 +707,4 @@ class Validator:
         return [column[0].lower() for column in columns]
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='18815', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
+    Validator().validate(job_ingestion_id='18828', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
