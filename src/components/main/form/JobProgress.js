@@ -5,6 +5,7 @@ import { SpinLoader } from 'components/common/Loader'
 import ErrorMessage from 'components/common/ErrorMessage'
 import { Progress } from 'antd'
 import { GET_JOB } from 'api/queries'
+import { getSectionText, getSectionHeader } from './helper'
 
 const Container = styled.div`
 	display: flex;
@@ -17,90 +18,9 @@ const ErrorCount = styled.div`
 	font-size: 1.3em;
 `
 
-const Title = styled.div`
-	font-weight: 400;
-	text-decoration: underline;
-`
-
 const Section = styled.div`
 	margin: 10px 0;
 `
-
-const getSectionText = (key, text) => {
-	if (key === 'unmaskedCreditCardData') {
-		return <Title>The file contains unmasked credit card data ({text})</Title>
-	}
-	if (key === 'sourceCurrencyCode') {
-		return (
-			<Title>The file does not contain source currency code ({text})</Title>
-		)
-	}
-	if (key === 'incorrectCharacters') {
-		return (
-			<Title>
-				The file contains non-english characters, only the following special
-				characters are allowed:`&$(),: ({text})
-			</Title>
-		)
-	}
-	if (key === 'incorrectDates') {
-		return (
-			<Title>
-				The file contains an incorrect date format, dates should be DD-MMM-YYYY
-				({text})
-			</Title>
-		)
-	}
-	if (key === 'stateShouldBeBlank') {
-		return <Title>The State value should be blank ({text})</Title>
-	}
-	if (key === 'stateMissing') {
-		return <Title>The State value is missing ({text})</Title>
-	}
-	if (key === 'stateInvalid') {
-		return <Title>Invalid two letter State Code ({text})</Title>
-	}
-}
-
-const getSectionHeader = (key, count) => {
-	if (key === 'unmaskedCreditCardData') {
-		return <Title key={key}>Unmasked credit card data ({count} errors)</Title>
-	}
-	if (key === 'sourceCurrencyCode') {
-		return <Title key={key}>No source currency code ({count} errors)</Title>
-	}
-	if (key === 'incorrectCharacters') {
-		return (
-			<Title key={key}>
-				Non-English or unallowed character used ({count} errors)
-			</Title>
-		)
-	}
-	if (key === 'incorrectDates') {
-		return <Title key={key}>Incorrect date format ({count} errors)</Title>
-	}
-	if (key === 'stateShouldBeBlank') {
-		return (
-			<Title key={key}>
-				Incorrect State value, State should be blank ({count} errors)
-			</Title>
-		)
-	}
-	if (key === 'stateMissing') {
-		return (
-			<Title key={key}>
-				Incorrect State value, State is missing ({count} errors)
-			</Title>
-		)
-	}
-	if (key === 'stateInvalid') {
-		return (
-			<Title key={key}>
-				Incorrect State value, State code is invalid ({count} errors)
-			</Title>
-		)
-	}
-}
 
 const JobProgress = ({ setJobId, jobId, setMessage, MessageHeading }) => {
 	const { loading, error, data, stopPolling } = useQuery(GET_JOB, {
