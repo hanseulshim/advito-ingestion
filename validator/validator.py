@@ -163,7 +163,7 @@ class Validator:
             # print(f"--- {end_read_time / 60} minutes to read file ---")
             # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
             # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
-                self.advito_session.commit()
+            self.advito_session.commit()
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
             if job.id > 0:
@@ -265,6 +265,7 @@ class Validator:
             .filter(JobIngestion.data_end_date == self.job.data_end_date)
             .filter(JobIngestion.advito_application_template_source_id == self.job.advito_application_template_source_id)
             .filter(JobIngestion.job_status != 'backout')
+            .filter(JobIngestion.job_status != 'error')
             .filter(JobIngestion.id != self.job.id)
             .first()
         )
@@ -582,11 +583,6 @@ class Validator:
             # Data type errors will be flagged elsewhere
             pass
         return okay
-
-
-    
-
-
 
     def _get_all_columns(self, source_id):
         columns_required = []
