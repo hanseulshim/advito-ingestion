@@ -266,6 +266,7 @@ class Validator:
             .filter(JobIngestion.advito_application_template_source_id == self.job.advito_application_template_source_id)
             .filter(JobIngestion.job_status != 'backout')
             .filter(JobIngestion.job_status != 'error')
+            .filter(JobIngestion.job_status != 'server-error')
             .filter(JobIngestion.id != self.job.id)
             .first()
         )
