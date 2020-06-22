@@ -133,11 +133,11 @@ class Validator:
                 row_range = int(row_count / row_const) + (row_count % row_const > 0)
                 for x in range(row_range):
                     current_range = x * row_const
-                    # if environment == 'PROD':
-                    #     new_key = 'upload/' + object_key
-                    #     s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=new_key)
-                    #     s3.delete_object(Bucket=bucket_dest, Key=object_key)
-                    #     job.file_name = new_key
+                    if environment == 'PROD':
+                        new_key = 'upload/' + object_key
+                        s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=new_key)
+                        s3.delete_object(Bucket=bucket_dest, Key=object_key)
+                        job.file_name = new_key
                     if advito_application_id == 1:
                         function_name = 'advito-ingestion-dev-ingest-hotel-template'
                         if environment == 'PROD':
