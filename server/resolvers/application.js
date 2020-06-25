@@ -61,9 +61,8 @@ export default {
 				.andWhere('a.isActive', true)
 				.orderBy(['a.application_name', 't.templateName']),
 		sourceList: async (_, { templateId }) =>
-			AdvitoApplicationTemplateSource.query().where(
-				'advitoApplicationTemplateId',
-				templateId
-			)
+			AdvitoApplicationTemplateSource.query()
+				.where('advitoApplicationTemplateId', templateId)
+				.orderBy('sequence')
 	}
 }
