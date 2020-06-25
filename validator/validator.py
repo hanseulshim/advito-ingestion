@@ -267,6 +267,7 @@ class Validator:
             .filter(JobIngestion.job_status != 'backout')
             .filter(JobIngestion.job_status != 'error')
             .filter(JobIngestion.job_status != 'server-error')
+            .filter(JobIngestion.job_status != 'deleted')
             .filter(JobIngestion.id != self.job.id)
             .first()
         )
