@@ -92,10 +92,10 @@ export default {
 
 				axios.post(
 					process.env.ENVIRONMENT === 'PROD'
-						? 'https://0rihemrgij.execute-api.us-east-2.amazonaws.com/prod/validation'
+						? 'https://20ygssfb8e.execute-api.us-east-2.amazonaws.com/prod/validation'
 						: process.env.ENVIRONMENT === 'STAGING'
-						? 'https://fynpwsijxl.execute-api.us-east-2.amazonaws.com/stage/validation'
-						: 'https://b1ojkecek7.execute-api.us-east-2.amazonaws.com/dev/validation',
+						? 'https://sjy9n3sbil.execute-api.us-east-2.amazonaws.com/stage/validation'
+						: 'https://xfqstehs97.execute-api.us-east-2.amazonaws.com/dev/validation',
 					{
 						job_ingestion_id: job.id,
 						bucket_origin: BUCKET_ORIGIN,

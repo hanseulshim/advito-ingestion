@@ -1,4 +1,4 @@
-service: hotelapi
+service: advito-ingestion-validator
 
 provider:
   name: aws
