@@ -122,7 +122,7 @@ class Validator:
             dt = datetime.now()
             job.is_complete = True
             row_count = len(df.index)
-            row_const = 150
+            row_const = 100
             job.count_rows = row_count
             job.processing_end_timestamp = dt
             job.processing_dur_sec = (dt - job.processing_start_timestamp).total_seconds()
