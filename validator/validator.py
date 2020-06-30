@@ -550,8 +550,9 @@ class Validator:
         okay = True
         try:
             checkout_date = datetime.strptime(str(checkout), '%Y-%m-%d %H:%M:%S')
-            days_delta = abs((checkout_date.date() - date_end).days)
-            okay = False if days_delta > MAX_DAYS else True
+            if checkout_date.date() > date_end:
+                days_delta = (checkout_date.date() - date_end).days
+                okay = False if days_delta > MAX_DAYS else True
         except ValueError:
             # If value isn't a datetime it will be caught in date validation section
             pass
