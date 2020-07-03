@@ -39,10 +39,14 @@ export default {
 		getPresignedUploadUrl: async (_, { fileName }) => {
 			const truncFileName =
 				fileName.length > 80 ? fileName.substring(0, 80) : fileName
+			
+			const fileEnvironment = process.env.ENVIRONMENT === 'PROD'
+			? 'production'
+			: process.env.ENVIRONMENT === 'STAGING'
+			? 'staging'
+			: 'dev',
 
-			const key = KEY
-				? `${KEY}/${Date.now()}_${truncFileName}`
-				: `${Date.now()}_${truncFileName}`
+			const key = `${KEY}/${fileEnvironment}_${Date.now()}_${truncFileName}`
 
 			const url = await s3.getSignedUrlPromise('putObject', {
 				Bucket: BUCKET_ORIGIN,
