@@ -131,11 +131,11 @@ class Validator:
                 job.job_note = None
                 # If the environment is production then copy the file into new bucket
                 row_range = int(row_count / row_const) + (row_count % row_const > 0)
+                if environment == 'PROD':
+                    s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=object_key)
+                    s3.delete_object(Bucket=bucket_origin, Key=object_key)
                 for x in range(row_range):
                     current_range = x * row_const
-                    if environment == 'PROD':
-                        s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=object_key)
-                        s3.delete_object(Bucket=bucket_dest, Key=object_key)
                     if advito_application_id == 1:
                         function_name = 'advito-ingestion-dev-ingest-hotel-template'
                         if environment == 'PROD':
@@ -704,4 +704,4 @@ class Validator:
         return [column[0].lower() for column in columns]
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='18828', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='DEV', advito_application_id=1)
+    Validator().validate(job_ingestion_id='750', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
