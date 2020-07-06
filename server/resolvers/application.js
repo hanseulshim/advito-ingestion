@@ -44,7 +44,7 @@ export default {
 				.alias('t')
 				.leftJoin('advitoApplication as a', 'a.id', 't.advitoApplicationId')
 				.where('advitoApplicationId', applicationId)
-				.orderBy('t.templateName'),
+				.orderBy('t.sequence'),
 		sampleTemplateList: async (_, __, { user }) =>
 			AdvitoApplicationTemplate.query()
 				.select('t.*', 'a.application_name')
@@ -59,7 +59,7 @@ export default {
 				.leftJoin('advitoUser as u', 'u.id', 'ur.advitoUserId')
 				.where('u.id', user.id)
 				.andWhere('a.isActive', true)
-				.orderBy(['a.application_name', 't.templateName']),
+				.orderBy(['a.application_name', 't.sequence']),
 		sourceList: async (_, { templateId }) =>
 			AdvitoApplicationTemplateSource.query()
 				.where('advitoApplicationTemplateId', templateId)
