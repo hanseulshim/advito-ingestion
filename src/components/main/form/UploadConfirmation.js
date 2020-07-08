@@ -24,11 +24,11 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 					const result = await client.query({
 						query: GET_PRESIGNED_UPLOAD_URL,
 						variables: {
-							fileName: file.name,
+							fileName: file.name
 						},
 						fetchPolicy: 'network-only',
 						//fetch a POST with
-						onError: (e) => console.log(e),
+						onError: (e) => console.log(e)
 					})
 					updateSignedUrl(result.data.getPresignedUploadUrl)
 					setError('')
@@ -61,7 +61,11 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 
 				if (workbook.SheetNames.length > 1) {
 					reject(
-						'The file you are trying to upload has multiple worksheets. This is not allowed.'
+						`The file you are trying to upload has multiple worksheets.
+						This is not allowed.
+						
+						Worksheets found: ${workbook.SheetNames.map((word) => `"${word}"`).join(', ')}.
+						Please make sure that any hidden sheets are deleted.`
 					)
 				} else if (file.size > 30000000) {
 					reject(
@@ -100,16 +104,18 @@ const UploadConfirmation = ({ visible, file, uploadFile, ...props }) => {
 			visible={visible}
 			okButtonProps={{
 				style: {
-					display: !file || parsingError || !signedUrl ? 'none' : '',
+					display: !file || parsingError || !signedUrl ? 'none' : ''
 				},
-				type: 'primary',
+				type: 'primary'
 			}}
 			cancelButtonProps={{ type: 'default' }}
 			onOk={() => uploadFile(signedUrl)}
 			{...props}
 		>
 			{file && message && <p>{message}</p>}
-			{file && parsingError && <p>{parsingError}</p>}
+			{file && parsingError && (
+				<p style={{ whiteSpace: 'pre-line' }}>{parsingError}</p>
+			)}
 			{!file && (
 				<p>No file selected. Please click or drag a file to upload area</p>
 			)}
