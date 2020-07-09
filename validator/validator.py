@@ -58,7 +58,8 @@ class Validator:
         self.advito_session.close()
 
     def validate(self, job_ingestion_id, bucket_origin, bucket_dest, environment, advito_application_id):
-    # def validate(self, job_ingestion_id):
+        # Constants
+        HPM_PROCESS_SOURCE_ID = 99999
         try:
             # 0. Get job, template and column information
             job = (
@@ -85,37 +86,82 @@ class Validator:
             end_read_time = time.time() - start_read_time
             start_validate_time = time.time()
 
-            # 1. Before main validation loop, check if a duplicate was already loaded?
-            validation_passed, err_list = self.duplicate_file_check()
-            if not validation_passed:
-                self.validation_errors['fileExists'] = err_list
-            else:
-                # 2. Not a duplicate. See if the template was valid.
-                validation_passed, err_list, required, types = self.incorrect_template_format(df)
+            # 1. Is this a process-only feedback file? If so direct off to its own logic
+            if job.advito_application_template_source_id == HPM_PROCESS_SOURCE_ID:
+                
+                print("PROCESS ONLY!!!!!")
+                # 1.A - The only validation is confirming template format
+                #       NOTE: rather than spawn off
+                validation_passed, err_list = self.process_feedback_template(job_ingestion_id, HPM_PROCESS_SOURCE_ID, df)
                 if not validation_passed:
                     self.validation_errors['incorrectTemplate'] = err_list
-                else:
-                    # Only run main loop if we have the right template
-                    self.required = required
-                    self.types = types
 
-                    progress_step = 100 / len(self.validators)
-                    for i, (validator, output) in enumerate(self.validators.items()):
-                        validation_run, validation_error = getattr(self, validator)(df)
-                        if validation_error:
-                            validation_passed = False
-                            if validator == 'state_validation':
-                                for key in validation_error:
-                                    if validation_error[key]:
-                                        self.validation_errors[key].extend(validation_error[key])
-                            else:
-                                self.validation_errors[output].extend(validation_error)
-                        # TODO: update job_note with progress 0-100
-                        job_progress_percentage = str(int((i + 1) * progress_step))
-                        job.job_note = job_progress_percentage
-                        self.advito_session.commit()
+                # 1.C - Update job record with results: process template only values
+                print(f"\n\n{self.validation_errors}\n\n")
+                from datetime import datetime
+                import json
+                dt = datetime.now()
+                job.is_complete = True
+                row_count = len(df.index)
+                row_const = 100
+                job.count_rows = row_count
+                job.processing_end_timestamp = dt
+                job.processing_dur_sec = (dt - job.processing_start_timestamp).total_seconds()
+                
+                # 1.D - 
+                if validation_passed:
+                    job.job_status = 'ingested'
+                    job.job_note = None
+                    # If the environment is production then copy the file into new bucket
+                    row_range = int(row_count / row_const) + (row_count % row_const > 0)
+                    if environment == 'PROD':
+                        s3.copy_object(Bucket=bucket_dest, CopySource=bucket_origin + '/' + object_key, Key=object_key)
+                        s3.delete_object(Bucket=bucket_origin, Key=object_key)
+                
+                else:
+                    print('There was an error in job ingestion id: ', job.id)
+                    job.job_status = 'error'
+                    job.job_note = json.dumps(self.validation_errors)
+                # print(f"--- {end_read_time / 60} minutes to read file ---")
+                # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
+                # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
+                self.advito_session.commit()
+
+                return validation_passed
+
+            else:
+
+                # 2. Before main validation loop, check if a duplicate was already loaded?
+                validation_passed, err_list = self.duplicate_file_check()
+                if not validation_passed:
+                    self.validation_errors['fileExists'] = err_list
+                else:
+                    # 3. Not a duplicate. See if the template was valid.
+                    validation_passed, err_list, required, types = self.incorrect_template_format(df)
+                    if not validation_passed:
+                        self.validation_errors['incorrectTemplate'] = err_list
+                    else:
+                        # Only run main loop if we have the right template
+                        self.required = required
+                        self.types = types
+
+                        progress_step = 100 / len(self.validators)
+                        for i, (validator, output) in enumerate(self.validators.items()):
+                            validation_run, validation_error = getattr(self, validator)(df)
+                            if validation_error:
+                                validation_passed = False
+                                if validator == 'state_validation':
+                                    for key in validation_error:
+                                        if validation_error[key]:
+                                            self.validation_errors[key].extend(validation_error[key])
+                                else:
+                                    self.validation_errors[output].extend(validation_error)
+                            # TODO: update job_note with progress 0-100
+                            job_progress_percentage = str(int((i + 1) * progress_step))
+                            job.job_note = job_progress_percentage
+                            self.advito_session.commit()
                     
-            # update job
+            # 4. Update job record with results: both standard & feedback templates
             print(f"\n\n{self.validation_errors}\n\n")
             from datetime import datetime
             import json
@@ -126,8 +172,10 @@ class Validator:
             job.count_rows = row_count
             job.processing_end_timestamp = dt
             job.processing_dur_sec = (dt - job.processing_start_timestamp).total_seconds()
+            
+
             if validation_passed:
-                job.job_status = 'done'
+                job.job_status = 'done' if job.advito_application_template_source_id != HPM_PROCESS_SOURCE_ID else 'ingested'
                 job.job_note = None
                 # If the environment is production then copy the file into new bucket
                 row_range = int(row_count / row_const) + (row_count % row_const > 0)
@@ -158,10 +206,13 @@ class Validator:
                 print('There was an error in job ingestion id: ', job.id)
                 job.job_status = 'error'
                 job.job_note = json.dumps(self.validation_errors)
-            # print(f"--- {end_read_time / 60} minutes to read file ---")
-            # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
-            # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
+                # print(f"--- {end_read_time / 60} minutes to read file ---")
+                # print(f"--- {(time.time() - start_validate_time) / 60} minutes to validate file ---")
+                # print(f"---  of size {job.file_size / 1000 / 1000}MB and {job.count_rows} rows ---")
+            
+            # Commit Changes
             self.advito_session.commit()
+            
         except NoResultFound:
             print('Job ingestion id {} not found'.format(job_ingestion_id))
             if job.id > 0:
@@ -365,6 +416,65 @@ class Validator:
                     'Row {}, Column {}'.format(str(index + 2), column.title())
                     for index in s.index.tolist())
         return (False, err_list) if err_list else (True, None)
+
+    def process_feedback_template(self, job_ingestion_id, source_id, data):
+        # Combo single validation (template format) and insert into stage table
+        from db.hotel_models import StageProcessClientFeedback
+        
+        # 0. Intialize
+        err_list = list()
+        index = 1
+
+        # 1. Get the field mapping for feedback template
+        passed, field_map = self._get_feedback_field_map(source_id)
+
+        if passed:
+            # 2. Validate the template
+            df = data.copy()
+            df_columns = df.columns.tolist()
+
+            columns = [key for key in field_map]
+
+            for expected, found in zip(columns, df_columns):
+                if found.lower().strip() != expected:
+                    err_list.append(f"In Column {self._get_excel_column_label(index)}: Expected '{expected.title()}', found '{found.title()}'")
+                    break
+                index += 1
+
+            if not err_list:
+                # No errors for what's there, make sure there are the
+                # same number of columns
+                if len(columns) != len(df_columns):
+                    err_list.append(f"{len(columns)} expected in Template, {len(df_columns)} found.")
+
+        else:
+            # Upstream problem, report the error
+            err_list = field_map
+
+        # 3. If no errors, go ahead and insert the stage records
+        if not err_list:
+
+            # Iterate through dataframe
+            for index, row in df.iterrows():
+                new_stage = StageProcessClientFeedback()
+
+                for df_column in df_columns:
+                    if not pd.isnull(row[df_column]):
+                        setattr(new_stage, field_map[df_column], row[df_column])
+
+                # Set the non-template values
+                new_stage.job_ingestion_id = job_ingestion_id
+                new_stage.is_processed = False
+
+                # Save it
+                self.hotel_session.add(new_stage)
+                self.hotel_session.commit()
+                new_stage = None
+        
+        if err_list:
+            return False, err_list
+        else:
+            return True, None
 
     def required_field_validation(self, data):
         print("Required Field Validation")
@@ -665,6 +775,28 @@ class Validator:
     
         return ''.join(header)
 
+    def _get_feedback_field_map(self, source_id):
+        field_map = {}
+        try:
+            source = (
+                self.advito_session.query(AdvitoApplicationTemplateSource)
+                    .filter(AdvitoApplicationTemplateSource.id == source_id)
+                    .one()
+            )
+            template_columns = (
+                self.advito_session.query(AdvitoApplicationTemplateColumn)
+                    .filter(AdvitoApplicationTemplateColumn.advito_application_template_id == source.advito_application_template_id)
+                    .order_by(AdvitoApplicationTemplateColumn.column_order)
+                    .all()
+            )
+            for column in template_columns:
+                field_map[column.column_name.lower()] = column.stage_column_name
+
+        except Exception as e:
+            return False, str(e)
+
+        return True, field_map
+
     def _get_state_codes(self):
         state_code_list = []
         geo_country_ids = [34, 203]     # 34: CA, 203: US
@@ -704,4 +836,4 @@ class Validator:
         return [column[0].lower() for column in columns]
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='750', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='PROD', advito_application_id=1)
+    Validator().validate(job_ingestion_id='1053', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='STAGE', advito_application_id=1)
