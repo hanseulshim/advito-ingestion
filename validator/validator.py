@@ -81,7 +81,9 @@ class Validator:
             data = obj['Body'].read()
             
             start_read_time = time.time()
-            df = pd.read_excel(io.BytesIO(data), encoding='utf-8')
+            df = pd.read_excel(io.BytesIO(data), encoding='utf-8', keep_default_na=False, na_values=['-1.#IND', '1.#QNAN', '1.#IND', '-1.#QNAN', 
+                                                            '#N/A N/A', '#N/A', 'N/A', 'n/a', '<NA>', '#NA', 'NULL', 'Null', 'null', 'NaN', 
+                                                            '-NaN', 'nan', '-nan', ''])
             df.columns = map(str.lower, df.columns)
             end_read_time = time.time() - start_read_time
             start_validate_time = time.time()
@@ -836,4 +838,4 @@ class Validator:
         return [column[0].lower() for column in columns]
 
 if __name__ == '__main__':
-    Validator().validate(job_ingestion_id='1053', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='STAGE', advito_application_id=1)
+    Validator().validate(job_ingestion_id='1060', bucket_origin='advito-ingestion-templates', bucket_dest='advito-ingestion-templates', environment='STAGE', advito_application_id=1)

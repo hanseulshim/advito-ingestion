@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# host = 'ia360-currentprod.cw0g3uulplsy.us-east-2.rds.amazonaws.com'
-host = 'hotel-staging-db.cw0g3uulplsy.us-east-2.rds.amazonaws.com'
+host = 'ia360-currentprod.cw0g3uulplsy.us-east-2.rds.amazonaws.com'
+# host = 'hotel-staging-db.cw0g3uulplsy.us-east-2.rds.amazonaws.com'
 # host = 'air-dev.cw0g3uulplsy.us-east-2.rds.amazonaws.com'
 port = '5432'
 user = 'AdvitoAdmin'
